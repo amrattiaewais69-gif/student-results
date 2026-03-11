@@ -2,140 +2,335 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>University of East Capital</title>
+<title>University of East Capital - Student Results</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
 <style>
-body{font-family:Segoe UI;background:linear-gradient(135deg,#1e3c72,#2a5298);display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
-.card{background:white;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.2);padding:30px;width:400px;text-align:center;}
-input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:1px solid #ccc;}
-button{background:#2a5298;color:white;border:none;padding:12px;width:100%;border-radius:6px;font-size:16px;cursor:pointer;}
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-table, th, td{border:1px solid #ccc;}
-th, td{padding:8px;text-align:center;}
-img{width:100px;height:100px;border-radius:50%;margin-bottom:10px;}
+
+body{
+font-family:Segoe UI;
+background:linear-gradient(135deg,#1e3c72,#2a5298);
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+margin:0;
+flex-direction:column;
+}
+
+.card{
+background:white;
+border-radius:12px;
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
+padding:30px;
+width:420px;
+text-align:center;
+}
+
+.logo{
+width:120px;
+margin-bottom:10px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:10px 0;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+button{
+background:#2a5298;
+color:white;
+border:none;
+padding:12px;
+width:100%;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1e3c72;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+table, th, td{
+border:1px solid #ccc;
+}
+
+th, td{
+padding:8px;
+text-align:center;
+}
+
+.student-photo{
+width:100px;
+height:100px;
+border-radius:50%;
+margin-bottom:10px;
+object-fit:cover;
+}
+
+footer{
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+text-align:center;
+background:rgba(0,0,0,0.3);
+color:#eee;
+padding:12px;
+font-size:13px;
+}
+
 </style>
 </head>
+
 <body>
 
+<!-- LOGIN -->
+
 <div class="card" id="loginBox">
-  <img src="logo.png" style="width:135px;margin-bottom:15px;">
-  <h1>University of East Capital</h1>
-  <input id="id" placeholder="Student ID">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
+
+<img src="logo.png" class="logo">
+
+<h2>University of East Capital</h2>
+<p>Student Result Portal</p>
+
+<input id="id" placeholder="Student ID">
+
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
 </div>
+
+<!-- CHANGE PASSWORD -->
 
 <div class="card" id="changePassBox" style="display:none;">
-  <h2>Change Password</h2>
-  <input id="newPass" type="password" placeholder="New Password">
-  <input id="confirmPass" type="password" placeholder="Confirm Password">
-  <button onclick="changePassword()">Change</button>
+
+<h3>Change Password</h3>
+
+<input id="newPass" type="password" placeholder="New Password">
+
+<input id="confirmPass" type="password" placeholder="Confirm Password">
+
+<button onclick="changePassword()">Update Password</button>
+
 </div>
+
+<!-- RESULT -->
 
 <div class="card" id="resultBox" style="display:none;">
-  <img id="studentPhoto" src="">
-  <h2 id="studentName"></h2>
-  <p>Student ID: <span id="studentID"></span></p>
-  <table>
-    <tr><th>Subject</th><th>Grade</th></tr>
-    <tr><td>Normal Human Structure</td><td id="s1"></td></tr>
-    <tr><td>Body Function & Biochemistry</td><td id="s2"></td></tr>
-    <tr><td>Molecular Biology & Genetics</td><td id="s3"></td></tr>
-    <tr><td>Biomedical Research & Statistics</td><td id="s4"></td></tr>
-    <tr><td>Human Behaviour & Psychology</td><td id="s5"></td></tr>
-    <tr><td>Learning & Thinking Skills</td><td id="s6"></td></tr>
-    <tr><td>Critical Thinking</td><td id="s7"></td></tr>
-    <tr><td>Total GPA</td><td id="gpa"></td></tr>
-  </table>
-  <button onclick="downloadPDF()">Download Official Result</button>
+
+<img id="studentPhoto" class="student-photo">
+
+<h3 id="studentName"></h3>
+
+<p>Student ID: <span id="studentID"></span></p>
+
+<table>
+
+<tr>
+<th>Subject</th>
+<th>Grade</th>
+</tr>
+
+<tr>
+<td>Normal Human Structure</td>
+<td id="s1"></td>
+</tr>
+
+<tr>
+<td>Body Function & Biochemistry</td>
+<td id="s2"></td>
+</tr>
+
+<tr>
+<td>Molecular Biology & Genetics</td>
+<td id="s3"></td>
+</tr>
+
+<tr>
+<td>Biomedical Research & Statistics</td>
+<td id="s4"></td>
+</tr>
+
+<tr>
+<td>Human Behaviour & Psychology</td>
+<td id="s5"></td>
+</tr>
+
+<tr>
+<td>Learning & Thinking Skills</td>
+<td id="s6"></td>
+</tr>
+
+<tr>
+<td>Critical Thinking</td>
+<td id="s7"></td>
+</tr>
+
+<tr>
+<td><b>Total GPA</b></td>
+<td id="gpa"></td>
+</tr>
+
+</table>
+
+<br>
+
+<button onclick="downloadPDF()">Download Official Result</button>
+
 </div>
 
+<footer>
+
+Designed by UEC ICT Department<br>
+© 2026 University of East Capital. All Rights Reserved.
+
+</footer>
+
 <script>
+
 const scriptURL = "https://script.google.com/macros/s/AKfycbxc51j7ndfjeQ4-yhBFyN-NcCJZrNn8ay0TsDZevPXttKjkl6uH3Zg5tVUxFOsM96nA/exec";
 
-let currentStudent = null;
+let currentStudent=null;
 
 function login(){
-  const id = document.getElementById("id").value;
-  const password = document.getElementById("password").value;
-  fetch(scriptURL,{
-    method:"POST",
-    body: new URLSearchParams({id, password})
-  })
-  .then(res => res.json())
-  .then(data => {
-    if(data.status=="error"){alert(data.message);return;}
-    currentStudent = data.student;
-    if(currentStudent.firstLogin){
-      document.getElementById("loginBox").style.display="none";
-      document.getElementById("changePassBox").style.display="block";
-    } else showResult();
-  })
-  .catch(err => alert("Error connecting to server"));
+
+const id=document.getElementById("id").value;
+const password=document.getElementById("password").value;
+
+fetch(scriptURL,{
+method:"POST",
+body:new URLSearchParams({id,password})
+})
+.then(res=>res.json())
+.then(data=>{
+
+if(data.status=="error"){
+alert(data.message);
+return;
+}
+
+currentStudent=data.student;
+
+if(currentStudent.firstLogin){
+
+document.getElementById("loginBox").style.display="none";
+document.getElementById("changePassBox").style.display="block";
+
+}else{
+
+showResult();
+
+}
+
+})
+.catch(err=>alert("Server connection error"));
+
 }
 
 function changePassword(){
-  const newPass = document.getElementById("newPass").value;
-  const confirmPass = document.getElementById("confirmPass").value;
-  if(newPass!==confirmPass){alert("Passwords do not match"); return;}
-  fetch(scriptURL,{
-    method:"POST",
-    body:new URLSearchParams({id:currentStudent.id, newPassword:newPass})
-  }).then(res=>res.json())
-  .then(data=>{
-    alert("Password changed successfully");
-    showResult();
-  });
+
+const newPass=document.getElementById("newPass").value;
+const confirmPass=document.getElementById("confirmPass").value;
+
+if(newPass!==confirmPass){
+alert("Passwords do not match");
+return;
+}
+
+fetch(scriptURL,{
+method:"POST",
+body:new URLSearchParams({
+id:currentStudent.id,
+newPassword:newPass
+})
+})
+.then(res=>res.json())
+.then(data=>{
+alert("Password updated successfully");
+showResult();
+});
+
 }
 
 function showResult(){
-  document.getElementById("changePassBox").style.display="none";
-  document.getElementById("loginBox").style.display="none";
-  document.getElementById("resultBox").style.display="block";
 
-  document.getElementById("studentName").innerText = currentStudent.name;
-  document.getElementById("studentID").innerText = currentStudent.id;
-  document.getElementById("s1").innerText = currentStudent.s1;
-  document.getElementById("s2").innerText = currentStudent.s2;
-  document.getElementById("s3").innerText = currentStudent.s3;
-  document.getElementById("s4").innerText = currentStudent.s4;
-  document.getElementById("s5").innerText = currentStudent.s5;
-  document.getElementById("s6").innerText = currentStudent.s6;
-  document.getElementById("s7").innerText = currentStudent.s7;
-  document.getElementById("gpa").innerText = currentStudent.gpa;
+document.getElementById("loginBox").style.display="none";
+document.getElementById("changePassBox").style.display="none";
+document.getElementById("resultBox").style.display="block";
 
-  document.getElementById("studentPhoto").src = "https://amrattiaewais69-gif.github.io/student-results/photos/" + currentStudent.id + ".jpg";
+document.getElementById("studentName").innerText=currentStudent.name;
+document.getElementById("studentID").innerText=currentStudent.id;
+
+document.getElementById("s1").innerText=currentStudent.s1;
+document.getElementById("s2").innerText=currentStudent.s2;
+document.getElementById("s3").innerText=currentStudent.s3;
+document.getElementById("s4").innerText=currentStudent.s4;
+document.getElementById("s5").innerText=currentStudent.s5;
+document.getElementById("s6").innerText=currentStudent.s6;
+document.getElementById("s7").innerText=currentStudent.s7;
+document.getElementById("gpa").innerText=currentStudent.gpa;
+
+document.getElementById("studentPhoto").src=
+"https://https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
+
 }
 
 function downloadPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.setFontSize(18);
-  doc.text("University of East Capital",105,20,{align:"center"});
-  doc.setFontSize(14);
-  doc.text("Official Student Result",105,30,{align:"center"});
-  doc.addImage(document.getElementById("studentPhoto"), 'JPEG', 80, 35, 50, 50);
-  doc.text(`Name: ${currentStudent.name}`,20,95);
-  doc.text(`Student ID: ${currentStudent.id}`,20,105);
-  doc.autoTable({
-    startY:115,
-    head:[['Subject','Grade']],
-    body:[
-      ['Normal Human Structure', currentStudent.s1],
-      ['Body Function & Biochemistry', currentStudent.s2],
-      ['Molecular Biology & Genetics', currentStudent.s3],
-      ['Biomedical Research & Statistics', currentStudent.s4],
-      ['Human Behaviour & Psychology', currentStudent.s5],
-      ['Learning & Thinking Skills', currentStudent.s6],
-      ['Critical Thinking', currentStudent.s7],
-      ['Total GPA', currentStudent.gpa]
-    ]
-  });
-  doc.text("Controller of Examinations",140,doc.lastAutoTable.finalY + 10);
-  doc.text("University of East Capital",140,doc.lastAutoTable.finalY + 18);
-  doc.save(`${currentStudent.id}_Result.pdf`);
+
+const {jsPDF}=window.jspdf;
+
+const doc=new jsPDF();
+
+doc.setFontSize(18);
+doc.text("University of East Capital",105,20,{align:"center"});
+
+doc.setFontSize(14);
+doc.text("Official Student Result",105,30,{align:"center"});
+
+doc.text("Name: "+currentStudent.name,20,50);
+doc.text("Student ID: "+currentStudent.id,20,60);
+
+doc.autoTable({
+
+startY:70,
+
+head:[["Subject","Grade"]],
+
+body:[
+
+["Normal Human Structure",currentStudent.s1],
+["Body Function & Biochemistry",currentStudent.s2],
+["Molecular Biology & Genetics",currentStudent.s3],
+["Biomedical Research & Statistics",currentStudent.s4],
+["Human Behaviour & Psychology",currentStudent.s5],
+["Learning & Thinking Skills",currentStudent.s6],
+["Critical Thinking",currentStudent.s7],
+["Total GPA",currentStudent.gpa]
+
+]
+
+});
+
+doc.text("Controller of Examinations",140,doc.lastAutoTable.finalY+20);
+
+doc.save(currentStudent.id+"_Result.pdf");
+
 }
+
 </script>
 
 </body>
