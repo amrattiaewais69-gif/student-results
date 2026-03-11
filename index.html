@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <title>University of East Capital</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <style>
 body{
   font-family:Segoe UI;
-  background: linear-gradient(135deg,#1e3c72,#2a5298);
+  background:linear-gradient(135deg,#1e3c72,#2a5298);
   display:flex;
   justify-content:center;
   align-items:center;
   min-height:100vh;
   margin:0;
 }
-
 .card{
   background:white;
   border-radius:12px;
@@ -22,22 +23,12 @@ body{
   width:400px;
   text-align:center;
 }
-
 input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:1px solid #ccc;}
 button{background:#2a5298;color:white;border:none;padding:12px;width:100%;border-radius:6px;font-size:16px;cursor:pointer;}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:20px;
-}
-
+table{width:100%;border-collapse:collapse;margin-top:20px;}
 table, th, td{border:1px solid #ccc;}
 th, td{padding:8px;text-align:center;}
-
 img{width:100px;height:100px;border-radius:50%;margin-bottom:10px;}
-
-#resultBox{display:none;}
 </style>
 </head>
 <body>
@@ -56,7 +47,7 @@ img{width:100px;height:100px;border-radius:50%;margin-bottom:10px;}
   <button onclick="changePassword()">Change</button>
 </div>
 
-<div class="card" id="resultBox">
+<div class="card" id="resultBox" style="display:none;">
   <img id="studentPhoto" src="">
   <h2 id="studentName"></h2>
   <p>Student ID: <span id="studentID"></span></p>
@@ -74,17 +65,15 @@ img{width:100px;height:100px;border-radius:50%;margin-bottom:10px;}
   <button onclick="downloadPDF()">Download Official Result</button>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbzgQdpKgqTPyeCIAnEkJqtbHL7UfJLl5ETdQasNiz3TCdK0f35fDt9tnbTVAfvpApIgDg/exec"; // ضع هنا رابط Google Apps Script
+const scriptURL = "https://script.google.com/macros/library/d/1HwMNSFwtcZnTXMUdjMul6Lg5iIBocHQk3ZWCz7leZB6YCk-uGktU2jUy/3";
 
 let currentStudent = null;
 
 function login(){
   const id = document.getElementById("id").value;
   const password = document.getElementById("password").value;
-
-  fetch(scriptURL, {
+  fetch(scriptURL,{
     method:"POST",
     body:new URLSearchParams({id,password})
   }).then(res=>res.json())
@@ -115,7 +104,7 @@ function changePassword(){
 function showResult(){
   document.getElementById("changePassBox").style.display="none";
   document.getElementById("loginBox").style.display="none";
-  document.getElementById("resultBox").style.display="block");
+  document.getElementById("resultBox").style.display="block";
 
   document.getElementById("studentName").innerText = currentStudent.name;
   document.getElementById("studentID").innerText = currentStudent.id;
@@ -131,7 +120,6 @@ function showResult(){
   document.getElementById("studentPhoto").src = "https://YOUR_USERNAME.github.io/student-results/photos/" + currentStudent.id + ".jpg";
 }
 
-// توليد PDF
 function downloadPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
