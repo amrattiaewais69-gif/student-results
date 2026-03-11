@@ -1,122 +1,166 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8">
-
 <title>University of East Capital</title>
-
 <style>
-
 body{
-font-family:Segoe UI;
-background:linear-gradient(135deg,#1e3c72,#2a5298);
-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-margin:0;
+  font-family:Segoe UI;
+  background: linear-gradient(135deg,#1e3c72,#2a5298);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  margin:0;
 }
 
 .card{
-
-background:white;
-padding:40px;
-border-radius:12px;
-width:350px;
-text-align:center;
-box-shadow:0 20px 40px rgba(0,0,0,.2);
-
+  background:white;
+  border-radius:12px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.2);
+  padding:30px;
+  width:400px;
+  text-align:center;
 }
 
-h1{
+input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:1px solid #ccc;}
+button{background:#2a5298;color:white;border:none;padding:12px;width:100%;border-radius:6px;font-size:16px;cursor:pointer;}
 
-font-size:20px;
-margin-bottom:30px;
-
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
 }
 
-input{
+table, th, td{border:1px solid #ccc;}
+th, td{padding:8px;text-align:center;}
 
-width:100%;
-padding:12px;
-margin:10px 0;
-border-radius:6px;
-border:1px solid #ccc;
+img{width:100px;height:100px;border-radius:50%;margin-bottom:10px;}
 
-}
-
-button{
-
-background:#2a5298;
-color:white;
-border:none;
-padding:12px;
-width:100%;
-border-radius:6px;
-font-size:16px;
-cursor:pointer;
-
-}
-
+#resultBox{display:none;}
 </style>
-
 </head>
-
 <body>
 
-<div class="card">
-
-<h1>University of East Capital</h1>
-
-<input id="id" placeholder="Student ID">
-
-<input id="password" type="password" placeholder="Password">
-
-<button onclick="login()">Login</button>
-
+<div class="card" id="loginBox">
+  <h1>University of East Capital</h1>
+  <input id="id" placeholder="Student ID">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
 </div>
 
+<div class="card" id="changePassBox" style="display:none;">
+  <h2>Change Password</h2>
+  <input id="newPass" type="password" placeholder="New Password">
+  <input id="confirmPass" type="password" placeholder="Confirm Password">
+  <button onclick="changePassword()">Change</button>
+</div>
+
+<div class="card" id="resultBox">
+  <img id="studentPhoto" src="">
+  <h2 id="studentName"></h2>
+  <p>Student ID: <span id="studentID"></span></p>
+  <table>
+    <tr><th>Subject</th><th>Grade</th></tr>
+    <tr><td>Normal Human Structure</td><td id="s1"></td></tr>
+    <tr><td>Body Function & Biochemistry</td><td id="s2"></td></tr>
+    <tr><td>Molecular Biology & Genetics</td><td id="s3"></td></tr>
+    <tr><td>Biomedical Research & Statistics</td><td id="s4"></td></tr>
+    <tr><td>Human Behaviour & Psychology</td><td id="s5"></td></tr>
+    <tr><td>Learning & Thinking Skills</td><td id="s6"></td></tr>
+    <tr><td>Critical Thinking</td><td id="s7"></td></tr>
+    <tr><td>Total GPA</td><td id="gpa"></td></tr>
+  </table>
+  <button onclick="downloadPDF()">Download Official Result</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbzgQdpKgqTPyeCIAnEkJqtbHL7UfJLl5ETdQasNiz3TCdK0f35fDt9tnbTVAfvpApIgDg/exec"; // ضع هنا رابط Google Apps Script
+
+let currentStudent = null;
 
 function login(){
+  const id = document.getElementById("id").value;
+  const password = document.getElementById("password").value;
 
-var id=document.getElementById("id").value;
-var password=document.getElementById("password").value;
-
-fetch("YOUR_SCRIPT_URL",{
-
-method:"POST",
-
-body:new URLSearchParams({
-
-id:id,
-password:password
-
-})
-
-})
-
-.then(res=>res.json())
-
-.then(data=>{
-
-if(data.status=="success"){
-
-alert("Welcome "+data.student.name)
-
-}else{
-
-alert(data.message)
-
+  fetch(scriptURL, {
+    method:"POST",
+    body:new URLSearchParams({id,password})
+  }).then(res=>res.json())
+  .then(data=>{
+    if(data.status=="error"){alert(data.message);return;}
+    currentStudent = data.student;
+    if(currentStudent.firstLogin){
+      document.getElementById("loginBox").style.display="none";
+      document.getElementById("changePassBox").style.display="block";
+    } else showResult();
+  });
 }
 
-})
-
+function changePassword(){
+  const newPass = document.getElementById("newPass").value;
+  const confirmPass = document.getElementById("confirmPass").value;
+  if(newPass!==confirmPass){alert("Passwords do not match"); return;}
+  fetch(scriptURL,{
+    method:"POST",
+    body:new URLSearchParams({id:currentStudent.id, newPassword:newPass})
+  }).then(res=>res.json())
+  .then(data=>{
+    alert("Password changed successfully");
+    showResult();
+  });
 }
 
+function showResult(){
+  document.getElementById("changePassBox").style.display="none";
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("resultBox").style.display="block");
+
+  document.getElementById("studentName").innerText = currentStudent.name;
+  document.getElementById("studentID").innerText = currentStudent.id;
+  document.getElementById("s1").innerText = currentStudent.s1;
+  document.getElementById("s2").innerText = currentStudent.s2;
+  document.getElementById("s3").innerText = currentStudent.s3;
+  document.getElementById("s4").innerText = currentStudent.s4;
+  document.getElementById("s5").innerText = currentStudent.s5;
+  document.getElementById("s6").innerText = currentStudent.s6;
+  document.getElementById("s7").innerText = currentStudent.s7;
+  document.getElementById("gpa").innerText = currentStudent.gpa;
+
+  document.getElementById("studentPhoto").src = "https://YOUR_USERNAME.github.io/student-results/photos/" + currentStudent.id + ".jpg";
+}
+
+// توليد PDF
+function downloadPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(18);
+  doc.text("University of East Capital",105,20,{align:"center"});
+  doc.setFontSize(14);
+  doc.text("Official Student Result",105,30,{align:"center"});
+  doc.addImage(document.getElementById("studentPhoto"), 'JPEG', 80, 35, 50, 50);
+  doc.text(`Name: ${currentStudent.name}`,20,95);
+  doc.text(`Student ID: ${currentStudent.id}`,20,105);
+  doc.autoTable({
+    startY:115,
+    head:[['Subject','Grade']],
+    body:[
+      ['Normal Human Structure', currentStudent.s1],
+      ['Body Function & Biochemistry', currentStudent.s2],
+      ['Molecular Biology & Genetics', currentStudent.s3],
+      ['Biomedical Research & Statistics', currentStudent.s4],
+      ['Human Behaviour & Psychology', currentStudent.s5],
+      ['Learning & Thinking Skills', currentStudent.s6],
+      ['Critical Thinking', currentStudent.s7],
+      ['Total GPA', currentStudent.gpa]
+    ]
+  });
+  doc.text("Controller of Examinations",140,doc.lastAutoTable.finalY + 10);
+  doc.text("University of East Capital",140,doc.lastAutoTable.finalY + 18);
+  doc.save(`${currentStudent.id}_Result.pdf`);
+}
 </script>
 
 </body>
-
 </html>
