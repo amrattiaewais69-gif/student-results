@@ -6,23 +6,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <style>
-body{
-  font-family:Segoe UI;
-  background:linear-gradient(135deg,#1e3c72,#2a5298);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  margin:0;
-}
-.card{
-  background:white;
-  border-radius:12px;
-  box-shadow:0 20px 40px rgba(0,0,0,0.2);
-  padding:30px;
-  width:400px;
-  text-align:center;
-}
+body{font-family:Segoe UI;background:linear-gradient(135deg,#1e3c72,#2a5298);display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
+.card{background:white;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.2);padding:30px;width:400px;text-align:center;}
 input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:1px solid #ccc;}
 button{background:#2a5298;color:white;border:none;padding:12px;width:100%;border-radius:6px;font-size:16px;cursor:pointer;}
 table{width:100%;border-collapse:collapse;margin-top:20px;}
@@ -66,7 +51,7 @@ img{width:100px;height:100px;border-radius:50%;margin-bottom:10px;}
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbzgQdpKgqTPyeCIAnEkJqtbHL7UfJLl5ETdQasNiz3TCdK0f35fDt9tnbTVAfvpApIgDg/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbxc51j7ndfjeQ4-yhBFyN-NcCJZrNn8ay0TsDZevPXttKjkl6uH3Zg5tVUxFOsM96nA/exec";
 
 let currentStudent = null;
 
@@ -151,5 +136,6 @@ function downloadPDF(){
   doc.save(`${currentStudent.id}_Result.pdf`);
 }
 </script>
+
 </body>
 </html>
