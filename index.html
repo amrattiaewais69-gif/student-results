@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
+
 <title>University of East Capital - Student Results</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
 <style>
@@ -15,16 +18,16 @@ background:linear-gradient(135deg,#1e3c72,#2a5298);
 display:flex;
 justify-content:center;
 align-items:center;
+flex-direction:column;
 min-height:100vh;
 margin:0;
-flex-direction:column;
 }
 
 .card{
 background:white;
+padding:30px;
 border-radius:12px;
 box-shadow:0 20px 40px rgba(0,0,0,0.2);
-padding:30px;
 width:420px;
 text-align:center;
 }
@@ -63,11 +66,11 @@ border-collapse:collapse;
 margin-top:20px;
 }
 
-table, th, td{
+table,th,td{
 border:1px solid #ccc;
 }
 
-th, td{
+th,td{
 padding:8px;
 text-align:center;
 }
@@ -76,14 +79,13 @@ text-align:center;
 width:100px;
 height:100px;
 border-radius:50%;
-margin-bottom:10px;
 object-fit:cover;
+margin-bottom:10px;
 }
 
 footer{
 position:fixed;
 bottom:0;
-left:0;
 width:100%;
 text-align:center;
 background:rgba(0,0,0,0.3);
@@ -93,6 +95,7 @@ font-size:13px;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -104,6 +107,7 @@ font-size:13px;
 <img src="logo.png" class="logo">
 
 <h2>🎓University of East Capital</h2>
+
 <p>Student Result Portal</p>
 
 <input id="id" placeholder="Student ID">
@@ -116,7 +120,7 @@ font-size:13px;
 
 <!-- CHANGE PASSWORD -->
 
-<div class="card" id="changePassBox" style="display:none;">
+<div class="card" id="changePassBox" style="display:none">
 
 <h3>Change Password</h3>
 
@@ -130,7 +134,7 @@ font-size:13px;
 
 <!-- RESULT -->
 
-<div class="card" id="resultBox" style="display:none;">
+<div class="card" id="resultBox" style="display:none">
 
 <img id="studentPhoto" class="student-photo">
 
@@ -141,7 +145,7 @@ font-size:13px;
 <table>
 
 <tr>
-<th>Subject</th>
+<th>Course</th>
 <th>Grade</th>
 </tr>
 
@@ -202,7 +206,7 @@ Designed by UEC ICT Department<br>
 
 <script>
 
-const scriptURL = "https://script.google.com/macros/s/AKfycbxc51j7ndfjeQ4-yhBFyN-NcCJZrNn8ay0TsDZevPXttKjkl6uH3Zg5tVUxFOsM96nA/exec";
+const scriptURL="https://script.google.com/macros/s/AKfycbxc51j7ndfjeQ4-yhBFyN-NcCJZrNn8ay0TsDZevPXttKjkl6uH3Zg5tVUxFOsM96nA/exec";
 
 let currentStudent=null;
 
@@ -237,7 +241,7 @@ showResult();
 }
 
 })
-.catch(err=>alert("Server connection error"));
+.catch(()=>alert("Error connecting to server"));
 
 }
 
@@ -247,8 +251,10 @@ const newPass=document.getElementById("newPass").value;
 const confirmPass=document.getElementById("confirmPass").value;
 
 if(newPass!==confirmPass){
+
 alert("Passwords do not match");
 return;
+
 }
 
 fetch(scriptURL,{
@@ -259,9 +265,12 @@ newPassword:newPass
 })
 })
 .then(res=>res.json())
-.then(data=>{
-alert("Password updated successfully");
+.then(()=>{
+
+alert("Password updated successfully👌");
+
 showResult();
+
 });
 
 }
@@ -273,6 +282,7 @@ document.getElementById("changePassBox").style.display="none";
 document.getElementById("resultBox").style.display="block";
 
 document.getElementById("studentName").innerText=currentStudent.name;
+
 document.getElementById("studentID").innerText=currentStudent.id;
 
 document.getElementById("s1").innerText=currentStudent.s1;
@@ -289,26 +299,53 @@ document.getElementById("studentPhoto").src=
 
 }
 
-function downloadPDF(){
+async function downloadPDF(){
 
 const {jsPDF}=window.jspdf;
 
 const doc=new jsPDF();
 
+const logoUrl="https://amrattiaewais69-gif.github.io/student-results/logo.png";
+
+const logoRes=await fetch(logoUrl);
+
+const logoBlob=await logoRes.blob();
+
+const logoReader=new FileReader();
+
+logoReader.onloadend=async function(){
+
+doc.addImage(logoReader.result,"PNG",15,10,30,30);
+
 doc.setFontSize(18);
+
 doc.text("University of East Capital",105,20,{align:"center"});
 
 doc.setFontSize(14);
-doc.text("Official Student Result",105,30,{align:"center"});
 
-doc.text("Name: "+currentStudent.name,20,50);
+doc.text("Official Academic Transcript",105,30,{align:"center"});
+
+doc.text("Student Name: "+currentStudent.name,20,50);
+
 doc.text("Student ID: "+currentStudent.id,20,60);
+
+const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
+
+const imgRes=await fetch(imgUrl);
+
+const imgBlob=await imgRes.blob();
+
+const reader=new FileReader();
+
+reader.onloadend=function(){
+
+doc.addImage(reader.result,"JPEG",160,40,30,30);
 
 doc.autoTable({
 
-startY:70,
+startY:80,
 
-head:[["Subject","Grade"]],
+head:[["Course","Grade"]],
 
 body:[
 
@@ -325,13 +362,26 @@ body:[
 
 });
 
-doc.text("Controller of Examinations",140,doc.lastAutoTable.finalY+20);
+let y=doc.lastAutoTable.finalY+25;
 
-doc.save(currentStudent.id+"_Result.pdf");
+doc.line(130,y,190,y);
+
+doc.text("Controller of Examinations",160,y+8,{align:"center"});
+
+doc.save(currentStudent.id+"_UEC_Result.pdf");
+
+};
+
+reader.readAsDataURL(imgBlob);
+
+};
+
+logoReader.readAsDataURL(logoBlob);
 
 }
 
 </script>
 
 </body>
+
 </html>
