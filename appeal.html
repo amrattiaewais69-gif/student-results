@@ -2,126 +2,86 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>University of East Capital - Appeal</title>
+<title>University of East Capital - Submit Appeal</title>
 <style>
-body{font-family:Segoe UI; background:linear-gradient(135deg,#1e3c72,#2a5298); display:flex; justify-content:center; align-items:center; flex-direction:column; min-height:100vh; margin:0;}
-.card{background:white; padding:30px; border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.2); width:420px; text-align:center;}
+body{ font-family:Segoe UI; background:linear-gradient(135deg,#1e3c72,#2a5298); display:flex; justify-content:center; align-items:center; flex-direction:column; min-height:100vh; margin:0; }
+.card{ background:white; padding:30px; border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.2); width:420px; text-align:center; }
 .logo{ width:120px; margin-bottom:10px; }
-.student-photo{ width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:10px; }
-select,input{ width:100%; padding:10px; margin:10px 0; border-radius:6px; border:1px solid #ccc; }
+input, select{ width:100%; padding:10px; margin:10px 0; border-radius:6px; border:1px solid #ccc; }
 button{ background:#2a5298; color:white; border:none; padding:12px; width:100%; border-radius:6px; font-size:16px; cursor:pointer; }
 button:hover{ background:#1e3c72; }
-.logout{ background:#777; margin-top:10px; }
-.logout:hover{ background:#555; }
+.student-photo{ width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:10px; }
+footer{ position:fixed; bottom:0; width:100%; text-align:center; background:rgba(0,0,0,0.3); color:#eee; padding:12px; font-size:13px; }
 </style>
 </head>
 <body>
-<div class="card">
-<img src="logo.png" class="logo">
-<h2>🎓 University of East Capital</h2>
-<h3>Course Appeal</h3>
-<img id="photo" class="student-photo">
-<h4 id="name"></h4>
-<p>Student ID : <span id="sid"></span></p>
-<select id="course"></select>
-<input id="reason" placeholder="Reason for Appeal">
-<button onclick="submitAppeal()">Submit Appeal</button>
-<button class="logout" onclick="logout()">Logout</button>
+<div class="card" id="appealCard">
+    <img src="logo.png" class="logo">
+    <h2>🎓 University of East Capital</h2>
+    <h3>Submit Course Appeal</h3>
+    <img id="studentPhoto" class="student-photo">
+    <p id="studentName"></p>
+    <p>Student ID: <span id="studentID"></span></p>
+
+    <label for="courseSelect">Select Course</label>
+    <select id="courseSelect"></select>
+
+    <input id="reason" placeholder="Reason for Appeal">
+    <button onclick="submitAppeal()">Submit Appeal</button>
 </div>
+<footer> Designed by UEC ICT Department<br> © 2026 University of East Capital. All Rights Reserved. </footer>
 
 <script>
-const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"; 
+let student=null;
 
-// 1️⃣ احصل على Student ID من الرابط
 const params=new URLSearchParams(window.location.search);
 const studentID=params.get("id");
-if(!studentID){
-    alert("No Student ID found, redirecting...");
-    window.location="index.html";
-}
 
-// 2️⃣ جلب بيانات الطالب من Google Apps Script
-fetch(scriptURL,{
-    method:"POST",
-    body:new URLSearchParams({ id:studentID, action:"getPaidCourses" })
-})
-.then(res=>res.json())
-.then(data=>{
-    if(data.status==="closed"){
-        alert("Appeal submission period is closed");
-        window.location="index.html";
-        return;
-    }
-    if(data.status!=="success" || !data.student){
-        alert("Unable to load student data. Please try again.");
-        return;
-    }
-
-    let student = data.student;
-    document.getElementById("name").innerText = student.name;
-    document.getElementById("sid").innerText = student.id;
-
-    // تحميل صورة الطالب
-    let imgURL = "https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
-    let img=new Image();
-    img.src=imgURL;
-    img.onload=function(){ document.getElementById("photo").src = imgURL; };
-    img.onerror=function(){ document.getElementById("photo").src="default.jpg"; };
-
-    // 3️⃣ تجهيز قائمة المواد المدفوعة فقط
-    let select = document.getElementById("course");
-    let first = document.createElement("option");
-    first.text="Select Course";
-    first.value="";
-    select.appendChild(first);
-
-    if(student.paidCourses && student.paidCourses.length>0){
-        student.paidCourses.forEach(c=>{
-            let op=document.createElement("option");
-            op.value=c;
-            op.text=c;
-            select.appendChild(op);
-        });
-    } else {
-        let op=document.createElement("option");
-        op.text="No paid courses available";
-        op.disabled=true;
-        select.appendChild(op);
-    }
-
-})
-.catch(err=>{
-    console.error(err);
-    alert("Failed to load data. Please check your internet connection or try again later.");
-});
-
-// 4️⃣ دوال التقديم والخروج
-function submitAppeal(){
-    let course=document.getElementById("course").value;
-    let reason=document.getElementById("reason").value.trim();
-    if(!course){ alert("Please select a course"); return; }
-    if(reason===""){ alert("Please enter reason for appeal"); return; }
-
+if(studentID){
     fetch(scriptURL,{
         method:"POST",
-        body:new URLSearchParams({ id:studentID, course:course, reason:reason, action:"submitAppeal" })
+        body:new URLSearchParams({id:studentID, action:"getStudentForAppeal"})
     })
     .then(res=>res.json())
     .then(data=>{
-        if(data.status==="closed"){ alert("Appeal submission period is closed"); return; }
-        if(data.status==="error"){ alert(data.message); return; }
-        alert("Appeal submitted successfully");
-        window.location="index.html";
-    })
-    .catch(err=>{
-        console.error(err);
-        alert("Failed to submit appeal.");
+        if(data.status=="success"){
+            student=data.student;
+            document.getElementById("studentName").innerText=student.name;
+            document.getElementById("studentID").innerText=student.id;
+            document.getElementById("studentPhoto").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
+            populateCourses(student.paidCourses);
+        }else{
+            alert(data.message); window.location.href="index.html";
+        }
     });
 }
 
-function logout(){
-    sessionStorage.clear();
-    window.location="index.html";
+function populateCourses(courses){
+    const select=document.getElementById("courseSelect");
+    select.innerHTML="";
+    courses.forEach(course=>{
+        const option=document.createElement("option");
+        option.value=course;
+        option.text=course;
+        select.appendChild(option);
+    });
+}
+
+function submitAppeal(){
+    const course=document.getElementById("courseSelect").value;
+    const reason=document.getElementById("reason").value.trim();
+    if(!course || !reason){ alert("Please fill all fields"); return; }
+
+    fetch(scriptURL,{
+        method:"POST",
+        body:new URLSearchParams({id:student.id, action:"submitAppeal", course:course, reason:reason})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.status=="success"){ alert("Appeal submitted successfully"); window.location.href="index.html"; }
+        else{ alert(data.message); }
+    });
 }
 </script>
 </body>
