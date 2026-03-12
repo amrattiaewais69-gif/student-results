@@ -84,8 +84,9 @@ function login(){
     .then(res=>res.json())
     .then(data=>{
         if(data.status=="error"){ alert(data.message); return; }
-
         currentStudent=data.student;
+
+        // تحويل المدفوعات لمصفوفة paidCourses
         currentStudent.paidCourses = [];
         if(currentStudent.payments && currentStudent.payments.length>0){
             currentStudent.payments.forEach(p=>{
@@ -94,10 +95,10 @@ function login(){
                 }
             });
         }
-        sessionStorage.setItem("studentData", JSON.stringify(currentStudent));
+
         showResult();
     })
-    .catch(()=>alert("Cannot connect to server. Please try again later."));
+    .catch(()=>alert("Cannot connect to server."));
 }
 
 function showResult(){
@@ -116,12 +117,18 @@ function showResult(){
     document.getElementById("s6").innerText=currentStudent.s6;
     document.getElementById("s7").innerText=currentStudent.s7;
     document.getElementById("gpa").innerText=currentStudent.gpa;
-
     document.getElementById("studentPhoto").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
+
+    // زر التظلمات يظهر دائمًا
+    document.getElementById("appealBtn").style.display="block";
 }
 
 function goToAppeal(){
-    window.location.href="appeal.html";
+    if(!currentStudent || !currentStudent.id){
+        alert("Please login first");
+        return;
+    }
+    window.location.href="appeal.html?id=" + currentStudent.id;
 }
 
 function logout(){
@@ -131,52 +138,27 @@ function logout(){
     document.getElementById("footer").style.display="block";
     document.getElementById("id").value="";
     document.getElementById("password").value="";
-    sessionStorage.clear();
 }
 
 // تحميل PDF
 async function downloadPDF(){
-    if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
+    if(!currentStudent){ alert("Session expired."); logout(); return; }
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF();
-    const logoUrl="https://amrattiaewais69-gif.github.io/student-results/logo.png";
-    const logoRes=await fetch(logoUrl);
-    const logoBlob=await logoRes.blob();
-    const logoReader=new FileReader();
-    logoReader.onloadend=async function(){
-        doc.addImage(logoReader.result,"PNG",15,10,30,30);
-        doc.setFontSize(18);
-        doc.text("University of East Capital",105,20,{align:"center"});
-        doc.setFontSize(14);
-        doc.text("Final Result for Semester 1",105,30,{align:"center"});
-        doc.text("Student Name: "+currentStudent.name,20,50);
-        doc.text("Student ID: "+currentStudent.id,20,60);
-        const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
-        const imgRes=await fetch(imgUrl);
-        const imgBlob=await imgRes.blob();
-        const reader=new FileReader();
-        reader.onloadend=function(){
-            doc.addImage(reader.result,"JPEG",160,40,30,30);
-            doc.autoTable({ startY:80, head:[["Course","Grade"]], body:[
-                ["Normal Human Structure",currentStudent.s1],
-                ["Body Function & Biochemistry",currentStudent.s2],
-                ["Molecular Biology & Genetics",currentStudent.s3],
-                ["Biomedical Research & Statistics",currentStudent.s4],
-                ["Human Behaviour & Psychology",currentStudent.s5],
-                ["Learning & Thinking Skills",currentStudent.s6],
-                ["Critical Thinking",currentStudent.s7],
-                ["GPA",currentStudent.gpa]
-            ]});
-            let y=doc.lastAutoTable.finalY+25;
-            doc.line(130,y,190,y);
-            doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
-            doc.setFontSize(10);
-            doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
-            doc.save(currentStudent.id+"_UEC_Result.pdf");
-        };
-        reader.readAsDataURL(imgBlob);
-    };
-    logoReader.readAsDataURL(logoBlob);
+    doc.text("University of East Capital",105,20,{align:"center"});
+    doc.text("Student: "+currentStudent.name,20,40);
+    doc.text("ID: "+currentStudent.id,20,50);
+    doc.autoTable({ startY:60, head:[["Course","Grade"]], body:[
+        ["Normal Human Structure",currentStudent.s1],
+        ["Body Function & Biochemistry",currentStudent.s2],
+        ["Molecular Biology & Genetics",currentStudent.s3],
+        ["Biomedical Research & Statistics",currentStudent.s4],
+        ["Human Behaviour & Psychology",currentStudent.s5],
+        ["Learning & Thinking Skills",currentStudent.s6],
+        ["Critical Thinking",currentStudent.s7],
+        ["GPA",currentStudent.gpa]
+    ]});
+    doc.save(currentStudent.id+"_UEC_Result.pdf");
 }
 </script>
 </body>
