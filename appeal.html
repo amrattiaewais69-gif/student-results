@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
-<title>UEC Appeals System</title>
+
+<title>UEC Appeals</title>
 
 <style>
+
 body{
 font-family:Segoe UI;
 background:linear-gradient(135deg,#1e3c72,#2a5298);
 display:flex;
 justify-content:center;
 align-items:center;
+flex-direction:column;
 min-height:100vh;
 margin:0;
 }
+
 .card{
 background:white;
 padding:30px;
@@ -22,17 +27,30 @@ box-shadow:0 20px 40px rgba(0,0,0,0.2);
 width:420px;
 text-align:center;
 }
-h2{margin-bottom:20px;color:#1e3c72;}
+
+.logo{
+width:120px;
+margin-bottom:10px;
+}
+
+.student-photo{
+width:100px;
+height:100px;
+border-radius:50%;
+object-fit:cover;
+margin-bottom:10px;
+}
+
 select,input{
 width:100%;
 padding:10px;
 margin:10px 0;
 border-radius:6px;
 border:1px solid #ccc;
-font-size:14px;
 }
+
 button{
-background:#ff9800;
+background:#2a5298;
 color:white;
 border:none;
 padding:12px;
@@ -40,90 +58,142 @@ width:100%;
 border-radius:6px;
 font-size:16px;
 cursor:pointer;
-margin-top:10px;
 }
-button:hover{background:#e68900;}
-#msg{margin-top:15px;font-size:14px;color:green;}
+
+button:hover{
+background:#1e3c72;
+}
+
 </style>
+
 </head>
 
 <body>
 
 <div class="card">
-<h2>Submit Appeal</h2>
-<p id="studentName"></p>
-<p>ID: <span id="studentID"></span></p>
 
-<select id="course">
-<option value="">Select Course</option>
-</select>
+<img src="logo.png" class="logo">
+
+<h2>University of East Capital</h2>
+
+<h3>Course Appeal</h3>
+
+<img id="photo" class="student-photo">
+
+<h4 id="name"></h4>
+
+<p>ID : <span id="sid"></span></p>
+
+<select id="course"></select>
+
+<input id="reason" placeholder="Reason for appeal">
 
 <button onclick="submitAppeal()">Submit Appeal</button>
 
-<p id="msg"></p>
 </div>
 
 <script>
-// ضع هنا رابط الـ Web App الخاص بالـ Apps Script
+
 const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-// قراءة ID من الرابط
-const params=new URLSearchParams(window.location.search);
-const id=params.get("id");
+const params = new URLSearchParams(window.location.search);
 
-if(!id){
-alert("Invalid access");
-}
+const studentID = params.get("id");
 
-// جلب اسم الطالب والمواد
-loadStudent();
+let student=null;
 
-function loadStudent(){
+
+
 fetch(scriptURL,{
-method:"POST",
-body:new URLSearchParams({
-action:"getAppealData",
-id:id
-})
-})
-.then(res=>res.json())
-.then(data=>{
-document.getElementById("studentName").innerText=data.name;
-document.getElementById("studentID").innerText=id;
 
-const courseSelect=document.getElementById("course");
-courseSelect.innerHTML='<option value="">Select Course</option>';
-data.courses.forEach(c=>{
-let opt=document.createElement("option");
-opt.value=c;
-opt.text=c;
-courseSelect.appendChild(opt);
-});
+method:"POST",
+
+body:new URLSearchParams({
+
+id:studentID,
+
+action:"getPaidCourses"
+
 })
-.catch(()=>alert("Error fetching student data"));
+
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(data.status!="success"){
+
+alert("Error");
+
+return;
+
 }
+
+student=data.student;
+
+document.getElementById("name").innerText=student.name;
+
+document.getElementById("sid").innerText=student.id;
+
+document.getElementById("photo").src="photos/"+student.id+".jpg";
+
+let select=document.getElementById("course");
+
+student.courses.forEach(c=>{
+
+let op=document.createElement("option");
+
+op.value=c;
+
+op.text=c;
+
+select.appendChild(op);
+
+});
+
+});
+
+
 
 function submitAppeal(){
-const course=document.getElementById("course").value;
-if(!course){
-alert("Please select course");
-return;
-}
+
+let course=document.getElementById("course").value;
+
+let reason=document.getElementById("reason").value;
 
 fetch(scriptURL,{
+
 method:"POST",
+
 body:new URLSearchParams({
-action:"submitAppeal",
-id:id,
-course:course
+
+id:student.id,
+
+course:course,
+
+reason:reason,
+
+action:"submitAppeal"
+
 })
+
 })
+
 .then(res=>res.json())
+
 .then(data=>{
-document.getElementById("msg").innerText=data.message;
+
+alert("Appeal submitted");
+
+window.location="index.html";
+
 });
+
 }
+
 </script>
 
 </body>
+
 </html>
