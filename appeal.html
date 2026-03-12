@@ -40,60 +40,79 @@ button:hover{ background:#1e3c72; }
 <script>
 const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-// جلب معرف الطالب من sessionStorage (تم حفظه عند صفحة النتائج)
-let studentData = sessionStorage.getItem("studentData");
-if(!studentData){
+// جلب معرف الطالب من رابط الصفحة
+const params = new URLSearchParams(window.location.search);
+const studentID = params.get("id");
+
+if(!studentID){
     alert("Please login first to access appeal page.");
     window.location="index.html";
 }
-let student = JSON.parse(studentData);
 
-// عرض البيانات الأساسية
-document.getElementById("name").innerText = student.name;
-document.getElementById("sid").innerText = student.id;
+// Fetch بيانات الطالب مباشرة من السيرفر
+fetch(scriptURL, {
+    method: "POST",
+    body: new URLSearchParams({ id: studentID, action: "getPaidCourses" })
+})
+.then(res => res.json())
+.then(data => {
+    if(data.status=="closed"){
+        alert("Appeal submission period is closed");
+        window.location="index.html";
+        return;
+    }
+    if(data.status!="success"){
+        alert("Error loading data");
+        return;
+    }
 
-// تحميل الصورة بسرعة
-let imgURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
-let img=new Image();
-img.src=imgURL;
-img.onload=function(){ document.getElementById("photo").src=imgURL; };
-img.onerror=function(){ document.getElementById("photo").src="default.jpg"; };
+    const student = data.student;
 
-// تجهيز قائمة المواد المدفوعة فقط
-let select = document.getElementById("course");
-let first = document.createElement("option");
-first.text = "Select Course";
-first.value = "";
-select.appendChild(first);
+    document.getElementById("name").innerText = student.name;
+    document.getElementById("sid").innerText = student.id;
 
-// نستخدم paidCourses بدل courses
-if(student.paidCourses && student.paidCourses.length>0){
-    student.paidCourses.forEach(c=>{
-        let op = document.createElement("option");
-        op.value = c;
-        op.text = c;
+    // تحميل الصورة
+    const imgURL = "https://amrattiaewais69-gif.github.io/student-results/photos/" + student.id + ".jpg";
+    const img = new Image();
+    img.src = imgURL;
+    img.onload = () => { document.getElementById("photo").src = imgURL; };
+    img.onerror = () => { document.getElementById("photo").src = "default.jpg"; };
+
+    // تجهيز قائمة المواد المدفوعة فقط
+    const select = document.getElementById("course");
+    select.innerHTML = '<option value="">Select Course</option>';
+    if(student.paidCourses && student.paidCourses.length>0){
+        student.paidCourses.forEach(c => {
+            const op = document.createElement("option");
+            op.value = c;
+            op.text = c;
+            select.appendChild(op);
+        });
+    } else {
+        const op = document.createElement("option");
+        op.value = "";
+        op.text = "No Paid Courses Available";
         select.appendChild(op);
-    });
-} else {
-    let op = document.createElement("option");
-    op.value = "";
-    op.text = "No Paid Courses Available";
-    select.appendChild(op);
-}
+    }
+
+    // حفظ بيانات الطالب في sessionStorage (اختياري للتنقل)
+    sessionStorage.setItem("studentData", JSON.stringify(student));
+})
+.catch(()=>alert("Cannot connect to server. Please try again later."));
 
 // ارسال التظلم
 function submitAppeal(){
-    let course = document.getElementById("course").value;
-    let reason = document.getElementById("reason").value.trim();
+    const course = document.getElementById("course").value;
+    const reason = document.getElementById("reason").value.trim();
     if(!course){ alert("Please select a course"); return; }
     if(reason==""){ alert("Please enter reason for appeal"); return; }
 
-    fetch(scriptURL,{
-        method:"POST",
-        body:new URLSearchParams({ id:student.id, course:course, reason:reason, action:"submitAppeal" })
+    fetch(scriptURL, {
+        method: "POST",
+        body: new URLSearchParams({ id: studentID, course: course, reason: reason, action: "submitAppeal" })
     })
-    .then(res=>res.json())
-    .then(data=>{
+    .then(res => res.json())
+    .then(data => {
         if(data.status=="closed"){ alert("Appeal submission period is closed"); return; }
         if(data.status=="error"){ alert(data.message); return; }
         alert("Appeal submitted successfully");
