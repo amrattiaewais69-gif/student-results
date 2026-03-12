@@ -31,45 +31,29 @@ button:hover{background:#1e3c72;}
 </div>
 
 <script>
-// رابط السيرفر
 const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-// جلب StudentID من رابط صفحة النتائج
 const params=new URLSearchParams(window.location.search);
 const studentID=params.get("id");
-if(!studentID){
-    alert("Please login first to access appeal page.");
-    window.location="index.html";
-}
+if(!studentID){ alert("Please login first to access appeal page."); window.location="index.html"; }
 
 let student=null;
 
-// جلب المواد المدفوعة من السيرفر
 fetch(scriptURL,{
     method:"POST",
     body:new URLSearchParams({ id:studentID, action:"getPaidCourses" })
 })
 .then(res=>res.json())
 .then(data=>{
-    if(data.status=="closed"){ 
-        alert("Appeal submission period is closed"); 
-        window.location="index.html"; 
-        return; 
-    }
-    if(data.status=="error"){ 
-        alert(data.message); 
-        window.location="index.html"; 
-        return; 
-    }
+    if(data.status=="closed"){ alert("Appeal submission period is closed"); window.location="index.html"; return; }
+    if(data.status=="error"){ alert(data.message); window.location="index.html"; return; }
 
-    student = data.student;
+    student=data.student;
 
-    // عرض بيانات الطالب
     document.getElementById("name").innerText = student.name;
     document.getElementById("sid").innerText = student.id;
-    document.getElementById("photo").src = "https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
+    document.getElementById("photo").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
 
-    // تعبئة Dropdown بالمواد المدفوعة فقط
     const select=document.getElementById("course");
     select.innerHTML='<option value="">Select Course</option>';
     if(student.paidCourses && student.paidCourses.length>0){
@@ -81,17 +65,13 @@ fetch(scriptURL,{
         });
     }else{
         const op=document.createElement("option");
-        op.value=""; 
+        op.value="";
         op.text="No paid courses available";
         select.appendChild(op);
     }
 })
-.catch(err=>{
-    console.error(err);
-    alert("Failed to load data. Please check your internet connection.");
-});
+.catch(err=>{ console.error(err); alert("Failed to load data. Check your connection."); });
 
-// إرسال التظلم للسيرفر
 function submitAppeal(){
     if(!student){ alert("Student data not loaded yet"); return; }
     const course=document.getElementById("course").value;
