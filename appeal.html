@@ -31,55 +31,36 @@ button:hover{background:#1e3c72;}
 </div>
 
 <script>
-const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
-const params = new URLSearchParams(window.location.search);
-const studentID = params.get("id");
+// =================== بيانات تجريبية للطالب ===================
+const studentID = "25-100001";
+const student = {
+    id: studentID,
+    name: "Loay Amr Ahmed",
+    paidCourses: ["Body Function & Biochemistry","Biomedical Research & Statistics"]
+};
 
-if(!studentID){ alert("Please login first"); window.location="index.html"; }
+// تحميل البيانات مباشرة بدون fetch
+document.getElementById("name").innerText = student.name;
+document.getElementById("sid").innerText = student.id;
+document.getElementById("photo").src = "https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
 
-fetch(scriptURL,{
-    method:"POST",
-    body:new URLSearchParams({ id: studentID, action:"getPaidCourses" })
-})
-.then(res=>res.json())
-.then(data=>{
-    if(data.status!="success"){ alert("Error loading data"); return; }
-    const student = data.student;
-    document.getElementById("name").innerText = student.name;
-    document.getElementById("sid").innerText = student.id;
-    const imgURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
-    document.getElementById("photo").src=imgURL;
-    const select=document.getElementById("course");
-    select.innerHTML='<option value="">Select Course</option>';
-    if(student.paidCourses && student.paidCourses.length>0){
-        student.paidCourses.forEach(c=>{
-            const op=document.createElement("option");
-            op.value=c; op.text=c;
-            select.appendChild(op);
-        });
-    } else {
-        const op=document.createElement("option"); op.value=""; op.text="No Paid Courses Available"; select.appendChild(op);
-    }
-    sessionStorage.setItem("studentData",JSON.stringify(student));
-})
-.catch(()=>alert("Cannot connect to server."));
+const select=document.getElementById("course");
+select.innerHTML='<option value="">Select Course</option>';
+student.paidCourses.forEach(c=>{
+    const op=document.createElement("option");
+    op.value=c; op.text=c;
+    select.appendChild(op);
+});
 
 function submitAppeal(){
     const course=document.getElementById("course").value;
     const reason=document.getElementById("reason").value.trim();
     if(!course){ alert("Please select a course"); return; }
     if(reason==""){ alert("Please enter reason"); return; }
-    fetch(scriptURL,{
-        method:"POST",
-        body:new URLSearchParams({ id:studentID, course:course, reason:reason, action:"submitAppeal" })
-    }).then(res=>res.json())
-      .then(data=>{
-          if(data.status=="error"){ alert(data.message); return; }
-          alert("Appeal submitted successfully"); window.location="index.html";
-      }).catch(()=>alert("Cannot connect to server."));
+    alert(`Appeal submitted!\nCourse: ${course}\nReason: ${reason}`);
 }
 
-function logout(){ sessionStorage.clear(); window.location="index.html"; }
+function logout(){ window.location="index.html"; }
 </script>
 </body>
 </html>
