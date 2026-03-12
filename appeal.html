@@ -40,7 +40,7 @@ button:hover{ background:#1e3c72; }
 <script>
 const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-// جلب معرف الطالب من رابط الصفحة
+// 1️⃣ جلب معرف الطالب من الرابط
 const params = new URLSearchParams(window.location.search);
 const studentID = params.get("id");
 
@@ -49,7 +49,7 @@ if(!studentID){
     window.location="index.html";
 }
 
-// Fetch بيانات الطالب مباشرة من السيرفر
+// 2️⃣ Fetch بيانات الطالب والمواد المدفوعة من السيرفر مباشرة
 fetch(scriptURL, {
     method: "POST",
     body: new URLSearchParams({ id: studentID, action: "getPaidCourses" })
@@ -71,18 +71,18 @@ fetch(scriptURL, {
     document.getElementById("name").innerText = student.name;
     document.getElementById("sid").innerText = student.id;
 
-    // تحميل الصورة
+    // تحميل صورة الطالب
     const imgURL = "https://amrattiaewais69-gif.github.io/student-results/photos/" + student.id + ".jpg";
     const img = new Image();
     img.src = imgURL;
     img.onload = () => { document.getElementById("photo").src = imgURL; };
     img.onerror = () => { document.getElementById("photo").src = "default.jpg"; };
 
-    // تجهيز قائمة المواد المدفوعة فقط
+    // اظهار المواد المدفوعة فقط
     const select = document.getElementById("course");
     select.innerHTML = '<option value="">Select Course</option>';
     if(student.paidCourses && student.paidCourses.length>0){
-        student.paidCourses.forEach(c => {
+        student.paidCourses.forEach(c=>{
             const op = document.createElement("option");
             op.value = c;
             op.text = c;
@@ -95,12 +95,12 @@ fetch(scriptURL, {
         select.appendChild(op);
     }
 
-    // حفظ بيانات الطالب في sessionStorage (اختياري للتنقل)
+    // حفظ بيانات الطالب اختياري
     sessionStorage.setItem("studentData", JSON.stringify(student));
 })
 .catch(()=>alert("Cannot connect to server. Please try again later."));
 
-// ارسال التظلم
+// 3️⃣ ارسال التظلم
 function submitAppeal(){
     const course = document.getElementById("course").value;
     const reason = document.getElementById("reason").value.trim();
@@ -121,6 +121,7 @@ function submitAppeal(){
     .catch(()=>alert("Cannot connect to server. Please try again later."));
 }
 
+// 4️⃣ تسجيل الخروج
 function logout(){
     sessionStorage.clear();
     window.location="index.html";
