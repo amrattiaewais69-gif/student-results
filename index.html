@@ -133,6 +133,11 @@ font-size:13px;
 <br>
 <button onclick="downloadPDF()">Download Official Result</button>
 <br><br>
+
+<!-- زر التظلمات الجديد -->
+<button onclick="openAppeal()" style="background:#ff9800">Submit Appeal</button>
+<br><br>
+
 <button onclick="logout()" style="background:#777">Logout</button>
 
 <p style="margin-top:15px;font-size:13px;color:#555">
@@ -168,7 +173,6 @@ document.getElementById("changePassBox").style.display="block";
 }else{ showResult(); }
 })
 .catch(()=>alert("The results are not yet released. Please check back later"));
-//.catch(()=>alert("Error connecting to server"));
 }
 
 function changePassword(){
@@ -266,6 +270,12 @@ reader.readAsDataURL(imgBlob);
 };
 
 logoReader.readAsDataURL(logoBlob);
+}
+
+// دالة فتح صفحة التظلمات
+function openAppeal(){
+if(!currentStudent){ alert("Please login first"); return; }
+window.open("appeal.html?id="+currentStudent.id,"_blank");
 }
 </script>
 
