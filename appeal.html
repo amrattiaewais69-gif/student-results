@@ -5,8 +5,7 @@
 <title>University of East Capital - Appeal</title>
 <style>
 body{
-    font-family:Segoe UI; 
-    background:linear-gradient(135deg,#1e3c72,#2a5298); 
+    font-family:Segoe UI; background:linear-gradient(135deg,#1e3c72,#2a5298);
     display:flex; justify-content:center; align-items:center; flex-direction:column;
     min-height:100vh; margin:0;
 }
@@ -41,24 +40,24 @@ button:hover{ background:#1e3c72; }
 <script>
 const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-// قراءة بيانات الطالب من sessionStorage
+// جلب معرف الطالب من sessionStorage (تم حفظه عند صفحة النتائج)
 let studentData = sessionStorage.getItem("studentData");
 if(!studentData){
     alert("Please login first to access appeal page.");
-    window.location = "index.html";
+    window.location="index.html";
 }
 let student = JSON.parse(studentData);
 
-// عرض بيانات الطالب
+// عرض البيانات الأساسية
 document.getElementById("name").innerText = student.name;
 document.getElementById("sid").innerText = student.id;
 
-// تحميل الصورة
-let imgURL = "https://amrattiaewais69-gif.github.io/student-results/photos/" + student.id + ".jpg";
-let img = new Image();
-img.src = imgURL;
-img.onload = function(){ document.getElementById("photo").src = imgURL; };
-img.onerror = function(){ document.getElementById("photo").src = "default.jpg"; };
+// تحميل الصورة بسرعة
+let imgURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
+let img=new Image();
+img.src=imgURL;
+img.onload=function(){ document.getElementById("photo").src=imgURL; };
+img.onerror=function(){ document.getElementById("photo").src="default.jpg"; };
 
 // تجهيز قائمة المواد المدفوعة فقط
 let select = document.getElementById("course");
@@ -67,8 +66,9 @@ first.text = "Select Course";
 first.value = "";
 select.appendChild(first);
 
-if(student.paidCourses && student.paidCourses.length > 0){
-    student.paidCourses.forEach(c => {
+// نستخدم paidCourses بدل courses
+if(student.paidCourses && student.paidCourses.length>0){
+    student.paidCourses.forEach(c=>{
         let op = document.createElement("option");
         op.value = c;
         op.text = c;
@@ -76,25 +76,21 @@ if(student.paidCourses && student.paidCourses.length > 0){
     });
 } else {
     let op = document.createElement("option");
-    op.text = "No paid courses available";
-    op.disabled = true;
+    op.value = "";
+    op.text = "No Paid Courses Available";
     select.appendChild(op);
 }
 
+// ارسال التظلم
 function submitAppeal(){
     let course = document.getElementById("course").value;
     let reason = document.getElementById("reason").value.trim();
     if(!course){ alert("Please select a course"); return; }
     if(reason==""){ alert("Please enter reason for appeal"); return; }
 
-    fetch(scriptURL, {
+    fetch(scriptURL,{
         method:"POST",
-        body: new URLSearchParams({
-            id: student.id,
-            course: course,
-            reason: reason,
-            action: "submitAppeal"
-        })
+        body:new URLSearchParams({ id:student.id, course:course, reason:reason, action:"submitAppeal" })
     })
     .then(res=>res.json())
     .then(data=>{
@@ -103,7 +99,7 @@ function submitAppeal(){
         alert("Appeal submitted successfully");
         window.location="index.html";
     })
-    .catch(()=>{ alert("Failed to submit appeal. Please try again later."); });
+    .catch(()=>alert("Cannot connect to server. Please try again later."));
 }
 
 function logout(){
