@@ -134,6 +134,10 @@ font-size:13px;
 <button onclick="downloadPDF()">Download Official Result</button>
 <br><br>
 <button onclick="logout()" style="background:#777">Logout</button>
+
+<p style="margin-top:15px;font-size:13px;color:#555">
+BL = Failed bylaw (Failed in the written Exam)
+</p>
 </div>
 
 <footer id="footer">
@@ -252,6 +256,8 @@ body:[
 let y=doc.lastAutoTable.finalY+25;
 doc.line(130,y,190,y);
 doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
+doc.setFontSize(10);
+doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
 doc.save(currentStudent.id+"_UEC_Result.pdf");
 };
 
