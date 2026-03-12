@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta charset="UTF-8">
 
-<title>UEC Appeals</title>
+<title>University of East Capital - Appeal</title>
 
 <style>
 
@@ -74,7 +75,7 @@ background:#1e3c72;
 
 <img src="logo.png" class="logo">
 
-<h2>University of East Capital</h2>
+<h2>🎓 University of East Capital</h2>
 
 <h3>Course Appeal</h3>
 
@@ -82,11 +83,11 @@ background:#1e3c72;
 
 <h4 id="name"></h4>
 
-<p>ID : <span id="sid"></span></p>
+<p>Student ID : <span id="sid"></span></p>
 
 <select id="course"></select>
 
-<input id="reason" placeholder="Reason for appeal">
+<input id="reason" placeholder="Reason for Appeal">
 
 <button onclick="submitAppeal()">Submit Appeal</button>
 
@@ -96,35 +97,37 @@ background:#1e3c72;
 
 const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-const params = new URLSearchParams(window.location.search);
+const params=new URLSearchParams(window.location.search);
 
-const studentID = params.get("id");
+const studentID=params.get("id");
 
 let student=null;
 
 
 
 fetch(scriptURL,{
-
 method:"POST",
-
 body:new URLSearchParams({
-
 id:studentID,
-
 action:"getPaidCourses"
-
 })
-
 })
-
 .then(res=>res.json())
-
 .then(data=>{
+
+if(data.status=="closed"){
+
+alert("Appeal submission period is closed");
+
+window.location="index.html";
+
+return;
+
+}
 
 if(data.status!="success"){
 
-alert("Error");
+alert("Error loading data");
 
 return;
 
@@ -136,9 +139,43 @@ document.getElementById("name").innerText=student.name;
 
 document.getElementById("sid").innerText=student.id;
 
-document.getElementById("photo").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
+
+
+// تحميل الصورة بسرعة
+
+let imgURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
+
+let img=new Image();
+
+img.src=imgURL;
+
+img.onload=function(){
+
+document.getElementById("photo").src=imgURL;
+
+};
+
+img.onerror=function(){
+
+document.getElementById("photo").src="default.jpg";
+
+};
+
+
+
+// تجهيز القائمة
 
 let select=document.getElementById("course");
+
+let first=document.createElement("option");
+
+first.text="Select Course";
+
+first.value="";
+
+select.appendChild(first);
+
+
 
 student.courses.forEach(c=>{
 
@@ -152,6 +189,8 @@ select.appendChild(op);
 
 });
 
+
+
 });
 
 
@@ -160,7 +199,29 @@ function submitAppeal(){
 
 let course=document.getElementById("course").value;
 
-let reason=document.getElementById("reason").value;
+let reason=document.getElementById("reason").value.trim();
+
+
+
+if(!course){
+
+alert("Please select a course");
+
+return;
+
+}
+
+
+
+if(reason==""){
+
+alert("Please enter reason for appeal");
+
+return;
+
+}
+
+
 
 fetch(scriptURL,{
 
@@ -184,13 +245,39 @@ action:"submitAppeal"
 
 .then(data=>{
 
-alert("Appeal submitted");
+
+
+if(data.status=="closed"){
+
+alert("Appeal submission period is closed");
+
+return;
+
+}
+
+
+
+if(data.status=="error"){
+
+alert(data.message);
+
+return;
+
+}
+
+
+
+alert("Appeal submitted successfully");
 
 window.location="index.html";
+
+
 
 });
 
 }
+
+
 
 </script>
 
