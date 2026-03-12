@@ -64,7 +64,7 @@ footer{ position:fixed; bottom:0; width:100%; text-align:center; background:rgba
     </table>
 
     <!-- زر التظلمات -->
-    <button id="appealBtn" onclick="goToAppeal()" style="background:#ff6600;margin-top:10px;display:none;">Submit Appeal</button>
+    <button id="appealBtn" onclick="goToAppeal()" style="background:#ff6600;margin-top:10px;">Submit Appeal</button>
     <br><br>
     <button onclick="downloadPDF()">Download Official Result</button>
     <br><br>
@@ -154,11 +154,8 @@ function showResult(){
 
     document.getElementById("studentPhoto").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
 
-    // ✅ اظهار زر التظلمات لو فيه أي مادة مدفوعة
-    if(currentStudent.paidCourses && currentStudent.paidCourses.length>0){
-        document.getElementById("appealBtn").style.display="block";
-    } else {
-        document.getElementById("appealBtn").style.display="none";
+    // الزر يظهر دائمًا
+document.getElementById("appealBtn").style.display="block";
     }
 }
 
