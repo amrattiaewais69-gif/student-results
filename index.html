@@ -6,15 +6,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <style>
-body{
-    font-family:Segoe UI; background:linear-gradient(135deg,#1e3c72,#2a5298);
-    display:flex; justify-content:center; align-items:center; flex-direction:column;
-    min-height:100vh; margin:0;
-}
-.card{
-    background:white; padding:30px; border-radius:12px;
-    box-shadow:0 20px 40px rgba(0,0,0,0.2); width:420px; text-align:center;
-}
+body{ font-family:Segoe UI; background:linear-gradient(135deg,#1e3c72,#2a5298); display:flex; justify-content:center; align-items:center; flex-direction:column; min-height:100vh; margin:0; }
+.card{ background:white; padding:30px; border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.2); width:420px; text-align:center; }
 .logo{ width:120px; margin-bottom:10px; }
 input{ width:100%; padding:10px; margin:10px 0; border-radius:6px; border:1px solid #ccc; }
 button{ background:#2a5298; color:white; border:none; padding:12px; width:100%; border-radius:6px; font-size:16px; cursor:pointer; }
@@ -63,7 +56,7 @@ footer{ position:fixed; bottom:0; width:100%; text-align:center; background:rgba
         <tr><td><b>GPA</b></td><td id="gpa"></td></tr>
     </table>
 
-    <!-- زر التظلمات -->
+    <!-- زر التظلمات موجود دائمًا -->
     <button id="appealBtn" onclick="goToAppeal()" style="background:#ff6600;margin-top:10px;">Submit Appeal</button>
     <br><br>
     <button onclick="downloadPDF()">Download Official Result</button>
@@ -77,14 +70,14 @@ footer{ position:fixed; bottom:0; width:100%; text-align:center; background:rgba
 </footer>
 
 <script>
-const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"; // ضع هنا رابط Google Apps Script
+const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 let currentStudent=null;
 
-window.onload=function(){ logout(); };
+window.onload = function(){ logout(); };
 
 function login(){
-    const id=document.getElementById("id").value.trim();
-    const password=document.getElementById("password").value.trim();
+    const id = document.getElementById("id").value.trim();
+    const password = document.getElementById("password").value.trim();
     if(!id || !password){ alert("Please enter ID and Password"); return; }
 
     fetch(scriptURL,{
@@ -95,10 +88,9 @@ function login(){
     .then(data=>{
         if(data.status=="error"){ alert(data.message); return; }
 
-        currentStudent=data.student;
+        currentStudent = data.student;
 
-        // ======= تحويل الصفوف لمصفوفة paidCourses =======
-        // افترض أن data.student.payments = array من الكائنات {Course, Amount, Date}
+        // تحويل المدفوعات لمصفوفة paidCourses
         currentStudent.paidCourses = [];
         if(currentStudent.payments && currentStudent.payments.length>0){
             currentStudent.payments.forEach(p => {
@@ -128,10 +120,7 @@ function changePassword(){
         body:new URLSearchParams({ id:currentStudent.id, newPassword:newPass })
     })
     .then(res=>res.json())
-    .then(()=>{
-        alert("Password updated successfully");
-        showResult();
-    });
+    .then(()=>{ alert("Password updated successfully"); showResult(); });
 }
 
 function showResult(){
@@ -141,25 +130,26 @@ function showResult(){
     document.getElementById("resultBox").style.display="block";
     document.getElementById("footer").style.display="none";
 
-    document.getElementById("studentName").innerText=currentStudent.name;
-    document.getElementById("studentID").innerText=currentStudent.id;
-    document.getElementById("s1").innerText=currentStudent.s1;
-    document.getElementById("s2").innerText=currentStudent.s2;
-    document.getElementById("s3").innerText=currentStudent.s3;
-    document.getElementById("s4").innerText=currentStudent.s4;
-    document.getElementById("s5").innerText=currentStudent.s5;
-    document.getElementById("s6").innerText=currentStudent.s6;
-    document.getElementById("s7").innerText=currentStudent.s7;
-    document.getElementById("gpa").innerText=currentStudent.gpa;
-
+    document.getElementById("studentName").innerText = currentStudent.name;
+    document.getElementById("studentID").innerText = currentStudent.id;
+    document.getElementById("s1").innerText = currentStudent.s1;
+    document.getElementById("s2").innerText = currentStudent.s2;
+    document.getElementById("s3").innerText = currentStudent.s3;
+    document.getElementById("s4").innerText = currentStudent.s4;
+    document.getElementById("s5").innerText = currentStudent.s5;
+    document.getElementById("s6").innerText = currentStudent.s6;
+    document.getElementById("s7").innerText = currentStudent.s7;
+    document.getElementById("gpa").innerText = currentStudent.gpa;
     document.getElementById("studentPhoto").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
 
-    // الزر يظهر دائمًا
-document.getElementById("appealBtn").style.display="block";
+    // حفظ بيانات الطالب في sessionStorage قبل الانتقال للتظلمات
+    sessionStorage.setItem("studentData", JSON.stringify(currentStudent));
 }
 
 function goToAppeal(){
-    window.location.href="appeal.html?id="+currentStudent.id;
+    // تأكد إن بيانات الطالب مخزنة قبل الانتقال
+    if(!currentStudent){ alert("Please login first."); return; }
+    window.location.href = "appeal.html";
 }
 
 function logout(){
@@ -170,9 +160,10 @@ function logout(){
     document.getElementById("footer").style.display="block";
     document.getElementById("id").value="";
     document.getElementById("password").value="";
+    sessionStorage.clear();
 }
 
-// دالة تحميل PDF تبقى زي ما هي عندك
+// تحميل PDF
 async function downloadPDF(){
     if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
     const {jsPDF}=window.jspdf;
