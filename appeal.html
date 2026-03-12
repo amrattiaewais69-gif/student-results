@@ -1,149 +1,149 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
 <meta charset="UTF-8">
-
-<title>Submit Appeal</title>
+<title>UEC Appeals System</title>
 
 <style>
-
 body{
-font-family:Arial;
-background:#f2f2f2;
-text-align:center;
-padding:40px;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#1e3c72,#2a5298);
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+margin:0;
 }
 
-form{
-
+.card{
 background:white;
-padding:20px;
-width:350px;
-margin:auto;
-border-radius:10px;
-
+padding:30px;
+border-radius:12px;
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
+width:420px;
+text-align:center;
 }
 
-input,select,button{
+h2{
+margin-bottom:20px;
+color:#1e3c72;
+}
 
+select,input{
 width:100%;
 padding:10px;
-margin-top:10px;
+margin:10px 0;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px;
+}
 
+button{
+background:#ff9800;
+color:white;
+border:none;
+padding:12px;
+width:100%;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+margin-top:10px;
+}
+
+button:hover{
+background:#e68900;
+}
+
+#msg{
+margin-top:15px;
+font-size:14px;
+color:green;
 }
 
 </style>
-
 </head>
 
 <body>
 
+<div class="card">
+
 <h2>Submit Appeal</h2>
 
-<form id="form">
+<p id="studentName"></p>
+<p>ID: <span id="studentID"></span></p>
 
-<input id="id" placeholder="Student ID" required>
+<select id="course">
+<option value="">Select Course</option>
+</select>
 
-<input id="name" placeholder="Student Name" readonly>
-
-<button type="button" onclick="loadCourses()">
-
-Load Courses
-
-</button>
-
-<select id="courses"></select>
-
-<button type="submit">
-
-Submit Appeal
-
-</button>
-
-</form>
+<button onclick="submitAppeal()">Submit Appeal</button>
 
 <p id="msg"></p>
 
+</div>
+
 <script>
+// ضع هنا رابط الـ Web App الخاص بالـ Apps Script
+const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-const API_URL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+// قراءة ID من الرابط
+const params=new URLSearchParams(window.location.search);
+const id=params.get("id");
 
-
-function loadCourses(){
-
-let id=document.getElementById("id").value;
-
-
-// جلب اسم الطالب
-
-fetch(API_URL+"?action=name&id="+id)
-
-.then(r=>r.text())
-
-.then(name=>{
-
-document.getElementById("name").value=name;
-
-});
-
-
-
-// جلب المواد المدفوعة
-
-fetch(API_URL+"?action=courses&id="+id)
-
-.then(r=>r.json())
-
-.then(data=>{
-
-let select=document.getElementById("courses");
-
-select.innerHTML="";
-
-data.forEach(c=>{
-
-let opt=document.createElement("option");
-
-opt.value=c;
-
-opt.text=c;
-
-select.appendChild(opt);
-
-});
-
-});
-
+if(!id){
+alert("Invalid access");
 }
 
+// جلب اسم الطالب والمواد المدفوعة
+loadStudent();
 
+function loadStudent(){
+fetch(scriptURL,{
+method:"POST",
+body:new URLSearchParams({
+action:"getAppealData",
+id:id
+})
+})
+.then(res=>res.json())
+.then(data=>{
+document.getElementById("studentName").innerText=data.name;
+document.getElementById("studentID").innerText=id;
 
-document.getElementById("form").addEventListener("submit",function(e){
-
-e.preventDefault();
-
-let id=document.getElementById("id").value;
-
-let name=document.getElementById("name").value;
-
-let course=document.getElementById("courses").value;
-
-fetch(API_URL+"?action=submit&id="+id+"&name="+name+"&course="+course)
-
-.then(r=>r.text())
-
-.then(msg=>{
-
-document.getElementById("msg").innerText=msg;
-
+const courseSelect=document.getElementById("course");
+courseSelect.innerHTML='<option value="">Select Course</option>';
+data.courses.forEach(c=>{
+let opt=document.createElement("option");
+opt.value=c;
+opt.text=c;
+courseSelect.appendChild(opt);
 });
+})
+.catch(()=>alert("Error fetching student data"));
+}
 
+// ارسال التظلم
+function submitAppeal(){
+const course=document.getElementById("course").value;
+if(!course){
+alert("Please select course");
+return;
+}
+
+fetch(scriptURL,{
+method:"POST",
+body:new URLSearchParams({
+action:"submitAppeal",
+id:id,
+course:course
+})
+})
+.then(res=>res.json())
+.then(data=>{
+document.getElementById("msg").innerText=data.message;
 });
-
+}
 </script>
 
 </body>
-
 </html>
