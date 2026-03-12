@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8">
 <title>University of East Capital - Student Results</title>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
 <style>
 body{
-font-family:Segoe UI;
+font-family:'Segoe UI',sans-serif;
 background:linear-gradient(135deg,#1e3c72,#2a5298);
 display:flex;
 justify-content:center;
@@ -19,7 +16,6 @@ flex-direction:column;
 min-height:100vh;
 margin:0;
 }
-
 .card{
 background:white;
 padding:30px;
@@ -28,72 +24,19 @@ box-shadow:0 20px 40px rgba(0,0,0,0.2);
 width:420px;
 text-align:center;
 }
-
-.logo{
-width:120px;
-margin-bottom:10px;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:10px 0;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
-button{
-background:#2a5298;
-color:white;
-border:none;
-padding:12px;
-width:100%;
-border-radius:6px;
-font-size:16px;
-cursor:pointer;
-}
-
-button:hover{
-background:#1e3c72;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:20px;
-}
-
-table,th,td{
-border:1px solid #ccc;
-}
-
-th,td{
-padding:8px;
-text-align:center;
-}
-
-.student-photo{
-width:100px;
-height:100px;
-border-radius:50%;
-object-fit:cover;
-margin-bottom:10px;
-}
-
-footer{
-position:fixed;
-bottom:0;
-width:100%;
-text-align:center;
-background:rgba(0,0,0,0.3);
-color:#eee;
-padding:12px;
-font-size:13px;
-}
+.logo{width:120px;margin-bottom:10px;}
+input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:1px solid #ccc;}
+button{background:#2a5298;color:white;border:none;padding:12px;width:100%;border-radius:6px;font-size:16px;cursor:pointer;}
+button:hover{background:#1e3c72;}
+button.logout{background:#777;margin-top:10px;}
+button.logout:hover{background:#555;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+table,th,td{border:1px solid #ccc;}
+th,td{padding:8px;text-align:center;}
+.student-photo{width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:10px;}
+footer{position:fixed;bottom:0;width:100%;text-align:center;background:rgba(0,0,0,0.3);color:#eee;padding:12px;font-size:13px;}
 </style>
-
 </head>
-
 <body>
 
 <!-- LOGIN -->
@@ -131,24 +74,15 @@ font-size:13px;
 <tr><td><b>GPA</b></td><td id="gpa"></td></tr>
 </table>
 <br>
+<p id="appealInfo" style="font-weight:bold;color:#2a5298"></p>
+<button id="appealBtn" style="display:none" onclick="goToAppeal()">Submit Appeal</button>
+<button class="logout" onclick="logout()">Logout</button>
+<br><br>
 <button onclick="downloadPDF()">Download Official Result</button>
-<br><br>
-
-<!-- زر التظلمات الجديد -->
-<button onclick="openAppeal()" style="background:#ff9800">Submit Appeal</button>
-<br><br>
-
-<button onclick="logout()" style="background:#777">Logout</button>
-
-<p style="margin-top:15px;font-size:13px;color:#555">
-BL = Failed bylaw (Failed in the written Exam)
-</p>
+<p style="margin-top:15px;font-size:13px;color:#555"> BL = Failed bylaw (Failed in the written Exam) </p>
 </div>
 
-<footer id="footer">
-Designed by UEC ICT Department<br>
-© 2026 University of East Capital. All Rights Reserved.
-</footer>
+<footer id="footer"> Designed by UEC ICT Department<br> © 2026 University of East Capital. All Rights Reserved. </footer>
 
 <script>
 const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
@@ -161,8 +95,7 @@ function login(){
 const id=document.getElementById("id").value.trim();
 const password=document.getElementById("password").value.trim();
 if(!id || !password){ alert("Please enter ID and Password"); return; }
-
-fetch(scriptURL,{ method:"POST", body:new URLSearchParams({id,password}) })
+fetch(scriptURL,{ method:"POST", body:new URLSearchParams({id,password,action:"getPaidCourses"}) })
 .then(res=>res.json())
 .then(data=>{
 if(data.status=="error"){ alert(data.message); return; }
@@ -170,20 +103,18 @@ currentStudent=data.student;
 if(currentStudent.firstLogin){
 document.getElementById("loginBox").style.display="none";
 document.getElementById("changePassBox").style.display="block";
-}else{ showResult(); }
+}else{
+showResult();
+}
 })
-.catch(()=>alert("The results are not yet released. Please check back later"));
-//.catch(()=>alert("Error connecting to server"));
+.catch(()=>alert("Error connecting to server"));
 }
 
 function changePassword(){
 const newPass=document.getElementById("newPass").value;
 const confirmPass=document.getElementById("confirmPass").value;
 if(newPass!==confirmPass){ alert("Passwords do not match"); return; }
-fetch(scriptURL,{
-method:"POST",
-body:new URLSearchParams({ id:currentStudent.id, newPassword:newPass })
-})
+fetch(scriptURL,{ method:"POST", body:new URLSearchParams({ id:currentStudent.id, newPassword:newPass }) })
 .then(res=>res.json())
 .then(()=>{ alert("Password updated successfully"); showResult(); });
 }
@@ -205,7 +136,43 @@ document.getElementById("s5").innerText=currentStudent.s5;
 document.getElementById("s6").innerText=currentStudent.s6;
 document.getElementById("s7").innerText=currentStudent.s7;
 document.getElementById("gpa").innerText=currentStudent.gpa;
-document.getElementById("studentPhoto").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
+
+// تحميل الصورة بسرعة
+let imgURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
+let img=new Image();
+img.src=imgURL;
+img.onload=function(){ document.getElementById("studentPhoto").src=imgURL; };
+img.onerror=function(){ document.getElementById("studentPhoto").src="default.jpg"; };
+
+// التعامل مع زر التظلمات
+if(currentStudent.courses && currentStudent.courses.length>0){
+fetch(scriptURL,{
+method:"POST",
+body:new URLSearchParams({id:currentStudent.id, action:"getPaidCourses"})
+})
+.then(res=>res.json())
+.then(data=>{
+if(data.status=="success" && data.student.courses.length>0){
+document.getElementById("appealInfo").innerText="You can submit appeal for "+data.student.courses.length+" course(s)";
+document.getElementById("appealBtn").style.display="block";
+}else if(data.status=="closed"){
+document.getElementById("appealInfo").innerText="Appeal submission period is closed";
+document.getElementById("appealBtn").style.display="none";
+}else{
+document.getElementById("appealInfo").innerText="No courses available for appeal";
+document.getElementById("appealBtn").style.display="none";
+}
+})
+.catch(()=>{ document.getElementById("appealInfo").innerText="Error loading appeal info"; document.getElementById("appealBtn").style.display="none"; });
+}else{
+document.getElementById("appealInfo").innerText="No courses available for appeal";
+document.getElementById("appealBtn").style.display="none";
+}
+
+}
+
+function goToAppeal(){
+window.location="appeal.html?id="+currentStudent.id;
 }
 
 function logout(){
@@ -220,15 +187,12 @@ document.getElementById("password").value="";
 
 async function downloadPDF(){
 if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
-
 const {jsPDF}=window.jspdf;
 const doc=new jsPDF();
-
 const logoUrl="https://amrattiaewais69-gif.github.io/student-results/logo.png";
 const logoRes=await fetch(logoUrl);
 const logoBlob=await logoRes.blob();
 const logoReader=new FileReader();
-
 logoReader.onloadend=async function(){
 doc.addImage(logoReader.result,"PNG",15,10,30,30);
 doc.setFontSize(18);
@@ -237,18 +201,13 @@ doc.setFontSize(14);
 doc.text("Final Result for Semester 1",105,30,{align:"center"});
 doc.text("Student Name: "+currentStudent.name,20,50);
 doc.text("Student ID: "+currentStudent.id,20,60);
-
 const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
 const imgRes=await fetch(imgUrl);
 const imgBlob=await imgRes.blob();
 const reader=new FileReader();
-
 reader.onloadend=function(){
 doc.addImage(reader.result,"JPEG",160,40,30,30);
-doc.autoTable({
-startY:80,
-head:[["Course","Grade"]],
-body:[
+doc.autoTable({ startY:80, head:[["Course","Grade"]], body:[
 ["Normal Human Structure",currentStudent.s1],
 ["Body Function & Biochemistry",currentStudent.s2],
 ["Molecular Biology & Genetics",currentStudent.s3],
@@ -257,8 +216,7 @@ body:[
 ["Learning & Thinking Skills",currentStudent.s6],
 ["Critical Thinking",currentStudent.s7],
 ["GPA",currentStudent.gpa]
-]
-});
+]});
 let y=doc.lastAutoTable.finalY+25;
 doc.line(130,y,190,y);
 doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
@@ -266,19 +224,11 @@ doc.setFontSize(10);
 doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
 doc.save(currentStudent.id+"_UEC_Result.pdf");
 };
-
 reader.readAsDataURL(imgBlob);
 };
-
 logoReader.readAsDataURL(logoBlob);
 }
 
-// دالة فتح صفحة التظلمات
-function openAppeal(){
-if(!currentStudent){ alert("Please login first"); return; }
-window.open("appeal.html?id="+currentStudent.id,"_blank");
-}
 </script>
-
 </body>
 </html>
