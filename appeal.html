@@ -31,36 +31,96 @@ button:hover{background:#1e3c72;}
 </div>
 
 <script>
-// =================== بيانات تجريبية للطالب ===================
-const studentID = "25-100001";
-const student = {
-    id: studentID,
-    name: "Loay Amr Ahmed",
-    paidCourses: ["Body Function & Biochemistry","Biomedical Research & Statistics"]
-};
+// رابط السيرفر
+const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-// تحميل البيانات مباشرة بدون fetch
-document.getElementById("name").innerText = student.name;
-document.getElementById("sid").innerText = student.id;
-document.getElementById("photo").src = "https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
+// جلب StudentID من رابط صفحة النتائج
+const params=new URLSearchParams(window.location.search);
+const studentID=params.get("id");
+if(!studentID){
+    alert("Please login first to access appeal page.");
+    window.location="index.html";
+}
 
-const select=document.getElementById("course");
-select.innerHTML='<option value="">Select Course</option>';
-student.paidCourses.forEach(c=>{
-    const op=document.createElement("option");
-    op.value=c; op.text=c;
-    select.appendChild(op);
+let student=null;
+
+// جلب المواد المدفوعة من السيرفر
+fetch(scriptURL,{
+    method:"POST",
+    body:new URLSearchParams({ id:studentID, action:"getPaidCourses" })
+})
+.then(res=>res.json())
+.then(data=>{
+    if(data.status=="closed"){ 
+        alert("Appeal submission period is closed"); 
+        window.location="index.html"; 
+        return; 
+    }
+    if(data.status=="error"){ 
+        alert(data.message); 
+        window.location="index.html"; 
+        return; 
+    }
+
+    student = data.student;
+
+    // عرض بيانات الطالب
+    document.getElementById("name").innerText = student.name;
+    document.getElementById("sid").innerText = student.id;
+    document.getElementById("photo").src = "https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
+
+    // تعبئة Dropdown بالمواد المدفوعة فقط
+    const select=document.getElementById("course");
+    select.innerHTML='<option value="">Select Course</option>';
+    if(student.paidCourses && student.paidCourses.length>0){
+        student.paidCourses.forEach(c=>{
+            const op=document.createElement("option");
+            op.value=c;
+            op.text=c;
+            select.appendChild(op);
+        });
+    }else{
+        const op=document.createElement("option");
+        op.value=""; 
+        op.text="No paid courses available";
+        select.appendChild(op);
+    }
+})
+.catch(err=>{
+    console.error(err);
+    alert("Failed to load data. Please check your internet connection.");
 });
 
+// إرسال التظلم للسيرفر
 function submitAppeal(){
+    if(!student){ alert("Student data not loaded yet"); return; }
     const course=document.getElementById("course").value;
     const reason=document.getElementById("reason").value.trim();
+
     if(!course){ alert("Please select a course"); return; }
-    if(reason==""){ alert("Please enter reason"); return; }
-    alert(`Appeal submitted!\nCourse: ${course}\nReason: ${reason}`);
+    if(reason==""){ alert("Please enter reason for appeal"); return; }
+
+    fetch(scriptURL,{
+        method:"POST",
+        body:new URLSearchParams({
+            id: student.id,
+            course: course,
+            reason: reason,
+            action: "submitAppeal"
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.status=="closed"){ alert("Appeal submission period is closed"); return; }
+        if(data.status=="error"){ alert(data.message); return; }
+        alert("Appeal submitted successfully");
+        window.location="index.html";
+    })
+    .catch(err=>{ console.error(err); alert("Failed to submit appeal. Try again later."); });
 }
 
 function logout(){ window.location="index.html"; }
 </script>
+
 </body>
 </html>
