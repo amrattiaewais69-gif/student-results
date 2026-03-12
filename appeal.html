@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Submit Appeal</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+text-align:center;
+padding:40px;
+}
+
+form{
+
+background:white;
+padding:20px;
+width:350px;
+margin:auto;
+border-radius:10px;
+
+}
+
+input,select,button{
+
+width:100%;
+padding:10px;
+margin-top:10px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Submit Appeal</h2>
+
+<form id="form">
+
+<input id="id" placeholder="Student ID" required>
+
+<input id="name" placeholder="Student Name" readonly>
+
+<button type="button" onclick="loadCourses()">
+
+Load Courses
+
+</button>
+
+<select id="courses"></select>
+
+<button type="submit">
+
+Submit Appeal
+
+</button>
+
+</form>
+
+<p id="msg"></p>
+
+<script>
+
+const API_URL="PUT_APPS_SCRIPT_URL_HERE";
+
+
+function loadCourses(){
+
+let id=document.getElementById("id").value;
+
+
+// جلب اسم الطالب
+
+fetch(API_URL+"?action=name&id="+id)
+
+.then(r=>r.text())
+
+.then(name=>{
+
+document.getElementById("name").value=name;
+
+});
+
+
+
+// جلب المواد المدفوعة
+
+fetch(API_URL+"?action=courses&id="+id)
+
+.then(r=>r.json())
+
+.then(data=>{
+
+let select=document.getElementById("courses");
+
+select.innerHTML="";
+
+data.forEach(c=>{
+
+let opt=document.createElement("option");
+
+opt.value=c;
+
+opt.text=c;
+
+select.appendChild(opt);
+
+});
+
+});
+
+}
+
+
+
+document.getElementById("form").addEventListener("submit",function(e){
+
+e.preventDefault();
+
+let id=document.getElementById("id").value;
+
+let name=document.getElementById("name").value;
+
+let course=document.getElementById("courses").value;
+
+fetch(API_URL+"?action=submit&id="+id+"&name="+name+"&course="+course)
+
+.then(r=>r.text())
+
+.then(msg=>{
+
+document.getElementById("msg").innerText=msg;
+
+});
+
+});
+
+</script>
+
+</body>
+
+</html>
