@@ -31,7 +31,7 @@ footer{ position:fixed; bottom:0; width:100%; text-align:center; background:rgba
 <!-- LOGIN -->
 <div class="card" id="loginBox">
     <img src="logo.png" class="logo">
-    <h2>🎓University of East Capital2</h2>
+    <h2>🎓University of East Capital</h2>
     <p>Student Result Portal</p>
     <input id="id" placeholder="Student ID">
     <input id="password" type="password" placeholder="Password">
@@ -177,8 +177,50 @@ function logout(){
 }
 
 // دالة تحميل PDF تبقى زي ما هي عندك
-async function downloadPDF(){ /* ... نفس الكود القديم ... */ }
+async function downloadPDF(){
+    if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF();
+    const logoUrl="https://amrattiaewais69-gif.github.io/student-results/logo.png";
+    const logoRes=await fetch(logoUrl);
+    const logoBlob=await logoRes.blob();
+    const logoReader=new FileReader();
+    logoReader.onloadend=async function(){
+        doc.addImage(logoReader.result,"PNG",15,10,30,30);
+        doc.setFontSize(18);
+        doc.text("University of East Capital",105,20,{align:"center"});
+        doc.setFontSize(14);
+        doc.text("Final Result for Semester 1",105,30,{align:"center"});
+        doc.text("Student Name: "+currentStudent.name,20,50);
+        doc.text("Student ID: "+currentStudent.id,20,60);
 
+        const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
+        const imgRes=await fetch(imgUrl);
+        const imgBlob=await imgRes.blob();
+        const reader=new FileReader();
+        reader.onloadend=function(){
+            doc.addImage(reader.result,"JPEG",160,40,30,30);
+            doc.autoTable({ startY:80, head:[["Course","Grade"]], body:[
+                ["Normal Human Structure",currentStudent.s1],
+                ["Body Function & Biochemistry",currentStudent.s2],
+                ["Molecular Biology & Genetics",currentStudent.s3],
+                ["Biomedical Research & Statistics",currentStudent.s4],
+                ["Human Behaviour & Psychology",currentStudent.s5],
+                ["Learning & Thinking Skills",currentStudent.s6],
+                ["Critical Thinking",currentStudent.s7],
+                ["GPA",currentStudent.gpa]
+            ]});
+            let y=doc.lastAutoTable.finalY+25;
+            doc.line(130,y,190,y);
+            doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
+            doc.setFontSize(10);
+            doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
+            doc.save(currentStudent.id+"_UEC_Result.pdf");
+        };
+        reader.readAsDataURL(imgBlob);
+    };
+    logoReader.readAsDataURL(logoBlob);
+}
 </script>
 </body>
 </html>
