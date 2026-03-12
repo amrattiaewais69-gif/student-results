@@ -6,24 +6,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <style>
-body{
-font-family:'Segoe UI',sans-serif;
-background:linear-gradient(135deg,#1e3c72,#2a5298);
-display:flex;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-min-height:100vh;
-margin:0;
-}
-.card{
-background:white;
-padding:30px;
-border-radius:12px;
-box-shadow:0 20px 40px rgba(0,0,0,0.2);
-width:420px;
-text-align:center;
-}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1e3c72,#2a5298);display:flex;justify-content:center;align-items:center;flex-direction:column;min-height:100vh;margin:0;}
+.card{background:white;padding:30px;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.2);width:420px;text-align:center;}
 .logo{width:120px;margin-bottom:10px;}
 input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:1px solid #ccc;}
 button{background:#2a5298;color:white;border:none;padding:12px;width:100%;border-radius:6px;font-size:16px;cursor:pointer;}
@@ -39,7 +23,6 @@ footer{position:fixed;bottom:0;width:100%;text-align:center;background:rgba(0,0,
 </head>
 <body>
 
-<!-- LOGIN -->
 <div class="card" id="loginBox">
 <img src="logo.png" class="logo">
 <h2>🎓University of East Capital</h2>
@@ -49,7 +32,6 @@ footer{position:fixed;bottom:0;width:100%;text-align:center;background:rgba(0,0,
 <button onclick="login()">Login</button>
 </div>
 
-<!-- CHANGE PASSWORD -->
 <div class="card" id="changePassBox" style="display:none">
 <h3>Change Password</h3>
 <input id="newPass" type="password" placeholder="New Password">
@@ -57,7 +39,6 @@ footer{position:fixed;bottom:0;width:100%;text-align:center;background:rgba(0,0,
 <button onclick="changePassword()">Update Password</button>
 </div>
 
-<!-- RESULT -->
 <div class="card" id="resultBox" style="display:none">
 <img id="studentPhoto" class="student-photo">
 <h3 id="studentName"></h3>
@@ -88,7 +69,6 @@ footer{position:fixed;bottom:0;width:100%;text-align:center;background:rgba(0,0,
 const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 let currentStudent=null;
 
-// عند تحميل الصفحة يرجع للوجن
 window.onload=function(){ logout(); };
 
 function login(){
@@ -128,14 +108,16 @@ document.getElementById("footer").style.display="none";
 
 document.getElementById("studentName").innerText=currentStudent.name;
 document.getElementById("studentID").innerText=currentStudent.id;
-document.getElementById("s1").innerText=currentStudent.s1;
-document.getElementById("s2").innerText=currentStudent.s2;
-document.getElementById("s3").innerText=currentStudent.s3;
-document.getElementById("s4").innerText=currentStudent.s4;
-document.getElementById("s5").innerText=currentStudent.s5;
-document.getElementById("s6").innerText=currentStudent.s6;
-document.getElementById("s7").innerText=currentStudent.s7;
-document.getElementById("gpa").innerText=currentStudent.gpa;
+
+// حل مشكلة undefined
+document.getElementById("s1").innerText = currentStudent.s1 || "-";
+document.getElementById("s2").innerText = currentStudent.s2 || "-";
+document.getElementById("s3").innerText = currentStudent.s3 || "-";
+document.getElementById("s4").innerText = currentStudent.s4 || "-";
+document.getElementById("s5").innerText = currentStudent.s5 || "-";
+document.getElementById("s6").innerText = currentStudent.s6 || "-";
+document.getElementById("s7").innerText = currentStudent.s7 || "-";
+document.getElementById("gpa").innerText = currentStudent.gpa || "-";
 
 // تحميل الصورة بسرعة
 let imgURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
@@ -144,7 +126,7 @@ img.src=imgURL;
 img.onload=function(){ document.getElementById("studentPhoto").src=imgURL; };
 img.onerror=function(){ document.getElementById("studentPhoto").src="default.jpg"; };
 
-// التعامل مع زر التظلمات
+// زر التظلمات وعدد المواد
 if(currentStudent.courses && currentStudent.courses.length>0){
 fetch(scriptURL,{
 method:"POST",
@@ -171,9 +153,7 @@ document.getElementById("appealBtn").style.display="none";
 
 }
 
-function goToAppeal(){
-window.location="appeal.html?id="+currentStudent.id;
-}
+function goToAppeal(){ window.location="appeal.html?id="+currentStudent.id; }
 
 function logout(){
 currentStudent=null;
@@ -208,14 +188,14 @@ const reader=new FileReader();
 reader.onloadend=function(){
 doc.addImage(reader.result,"JPEG",160,40,30,30);
 doc.autoTable({ startY:80, head:[["Course","Grade"]], body:[
-["Normal Human Structure",currentStudent.s1],
-["Body Function & Biochemistry",currentStudent.s2],
-["Molecular Biology & Genetics",currentStudent.s3],
-["Biomedical Research & Statistics",currentStudent.s4],
-["Human Behaviour & Psychology",currentStudent.s5],
-["Learning & Thinking Skills",currentStudent.s6],
-["Critical Thinking",currentStudent.s7],
-["GPA",currentStudent.gpa]
+["Normal Human Structure",currentStudent.s1 || "-"],
+["Body Function & Biochemistry",currentStudent.s2 || "-"],
+["Molecular Biology & Genetics",currentStudent.s3 || "-"],
+["Biomedical Research & Statistics",currentStudent.s4 || "-"],
+["Human Behaviour & Psychology",currentStudent.s5 || "-"],
+["Learning & Thinking Skills",currentStudent.s6 || "-"],
+["Critical Thinking",currentStudent.s7 || "-"],
+["GPA",currentStudent.gpa || "-"]
 ]});
 let y=doc.lastAutoTable.finalY+25;
 doc.line(130,y,190,y);
@@ -228,7 +208,6 @@ reader.readAsDataURL(imgBlob);
 };
 logoReader.readAsDataURL(logoBlob);
 }
-
 </script>
 </body>
 </html>
