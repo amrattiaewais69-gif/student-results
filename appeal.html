@@ -14,7 +14,6 @@ align-items:center;
 min-height:100vh;
 margin:0;
 }
-
 .card{
 background:white;
 padding:30px;
@@ -23,12 +22,7 @@ box-shadow:0 20px 40px rgba(0,0,0,0.2);
 width:420px;
 text-align:center;
 }
-
-h2{
-margin-bottom:20px;
-color:#1e3c72;
-}
-
+h2{margin-bottom:20px;color:#1e3c72;}
 select,input{
 width:100%;
 padding:10px;
@@ -37,7 +31,6 @@ border-radius:6px;
 border:1px solid #ccc;
 font-size:14px;
 }
-
 button{
 background:#ff9800;
 color:white;
@@ -49,26 +42,15 @@ font-size:16px;
 cursor:pointer;
 margin-top:10px;
 }
-
-button:hover{
-background:#e68900;
-}
-
-#msg{
-margin-top:15px;
-font-size:14px;
-color:green;
-}
-
+button:hover{background:#e68900;}
+#msg{margin-top:15px;font-size:14px;color:green;}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-
 <h2>Submit Appeal</h2>
-
 <p id="studentName"></p>
 <p>ID: <span id="studentID"></span></p>
 
@@ -79,7 +61,6 @@ color:green;
 <button onclick="submitAppeal()">Submit Appeal</button>
 
 <p id="msg"></p>
-
 </div>
 
 <script>
@@ -94,7 +75,7 @@ if(!id){
 alert("Invalid access");
 }
 
-// جلب اسم الطالب والمواد المدفوعة
+// جلب اسم الطالب والمواد
 loadStudent();
 
 function loadStudent(){
@@ -122,7 +103,6 @@ courseSelect.appendChild(opt);
 .catch(()=>alert("Error fetching student data"));
 }
 
-// ارسال التظلم
 function submitAppeal(){
 const course=document.getElementById("course").value;
 if(!course){
