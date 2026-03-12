@@ -41,7 +41,7 @@ let student=null;
 
 fetch(scriptURL,{
     method:"POST",
-    body:new URLSearchParams({ id:studentID, action:"getPaidCourses" })
+    body:new URLSearchParams({ id:ID, action:"getPaidCourses" })
 })
 .then(res=>res.json())
 .then(data=>{
