@@ -75,7 +75,6 @@ Designed by UEC ICT Department<br>
 const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 let currentStudent=null;
 
-// --- Login ---
 async function login(){
   let id=document.getElementById("id").value;
   let pass=document.getElementById("pass").value;
@@ -108,7 +107,6 @@ async function login(){
   }
 }
 
-// --- Show FirstLogin Card ---
 function showFirstLoginCard(studentId){
   document.getElementById("firstLoginBox").style.display="block";
   document.getElementById("loginBox").style.display="none";
@@ -131,7 +129,6 @@ function showFirstLoginCard(studentId){
   }
 }
 
-// --- Show Results ---
 function showResult(s){
   document.getElementById("resultBox").style.display="block";
   document.getElementById("name").innerText=s.name;
@@ -149,7 +146,7 @@ function showResult(s){
 function openAppeal(){ window.location="appeal.html"; }
 function logout(){ localStorage.clear(); location.reload(); }
 
-// --- Download PDF ---
+// Download PDF (كما قبل)
 async function downloadPDF(){
     if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
     const {jsPDF}=window.jspdf;
