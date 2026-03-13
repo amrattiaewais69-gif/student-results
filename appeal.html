@@ -7,12 +7,12 @@
 <style>
 *{box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.card{background:#eee;width:420px;border-radius:12px;padding:30px;text-align:center;}
+.card{background:#eee;width:450px;border-radius:12px;padding:30px;text-align:center;}
 .logo{width:90px;margin-bottom:10px;}
 .studentPhoto{width:120px;height:120px;border-radius:50%;margin:auto;display:block;}
 table{width:100%;border-collapse:collapse;margin-top:20px;}
 th{background:#4e81bd;color:white;padding:10px;}
-td{padding:10px;border:1px solid #ddd;}
+td{padding:10px;border:1px solid #ddd;text-align:center;}
 textarea{width:100%;margin-top:10px;padding:10px;border-radius:6px;border:1px solid #ccc;height:90px;}
 button{width:100%;padding:12px;margin-top:10px;background:#345a9d;border:none;color:white;border-radius:6px;cursor:pointer;}
 button:hover{background:#274a86;}
@@ -29,6 +29,7 @@ button:hover{background:#274a86;}
 <h3 id="name"></h3>
 <p id="sid"></p>
 
+<label for="courseSelect"><strong>Select Course to Appeal:</strong></label>
 <table id="coursesTable">
 <tr><th>Select</th><th>Course</th></tr>
 </table>
@@ -36,6 +37,11 @@ button:hover{background:#274a86;}
 <textarea id="reason" placeholder="Reason for Appeal"></textarea>
 <button onclick="submitAppeal()">Submit Appeal</button>
 <button class="logout" onclick="logout()">Logout</button>
+
+<h3>Your Previous Appeals</h3>
+<table id="appealHistoryTable">
+<tr><th>Course</th><th>Reason</th><th>Date</th><th>Status</th></tr>
+</table>
 </div>
 
 <div class="footer">
@@ -52,9 +58,10 @@ document.getElementById("name").innerText=student.name;
 document.getElementById("sid").innerText="Student ID: "+student.id;
 document.getElementById("photo").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
 
+// --- Load Courses for New Appeals ---
 async function loadCourses(){
-  let res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getAppealCourses",id:student.id})});
-  let courses=await res.json();
+  let res = await fetch(API,{method:"POST",body:JSON.stringify({action:"getAppealCourses",id:student.id})});
+  let courses = await res.json();
   let table=document.getElementById("coursesTable");
   courses.forEach(c=>{
     table.innerHTML+=`<tr><td><input type="radio" name="course" value="${c}"></td><td>${c}</td></tr>`;
@@ -62,11 +69,31 @@ async function loadCourses(){
 }
 loadCourses();
 
+// --- Load Previous Appeals ---
+async function loadAppealHistory(){
+  // جلب كل الطلبات السابقة للطالب
+  let res = await fetch(API,{method:"POST",body:JSON.stringify({action:"getAllAppeals",id:student.id})});
+  let history = await res.json();
+  let table=document.getElementById("appealHistoryTable");
+  history.forEach(h=>{
+    let statusColor = h.Status=="Approved" ? "green" : h.Status=="Rejected" ? "red" : "orange";
+    table.innerHTML+=`<tr>
+      <td>${h.Course}</td>
+      <td>${h.Reason}</td>
+      <td>${new Date(h.Date).toLocaleDateString()}</td>
+      <td style="color:${statusColor};font-weight:bold;">${h.Status}</td>
+    </tr>`;
+  });
+}
+loadAppealHistory();
+
+// --- Submit New Appeal ---
 async function submitAppeal(){
   let course=document.querySelector('input[name="course"]:checked');
   let reason=document.getElementById("reason").value;
   if(!course){ alert("Please select course"); return; }
   if(reason==""){ alert("Please write reason"); return; }
+
   await fetch(API,{method:"POST",body:JSON.stringify({action:"submitAppeal",id:student.id,name:student.name,course:course.value,reason:reason})});
   alert("Appeal submitted successfully");
   location.reload();
