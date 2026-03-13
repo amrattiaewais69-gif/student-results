@@ -15,7 +15,6 @@ font-family:'Poppins',sans-serif;
 }
 
 body{
-
 margin:0;
 background:#2f528f;
 min-height:100vh;
@@ -23,38 +22,30 @@ display:flex;
 align-items:center;
 justify-content:center;
 flex-direction:column;
-
 }
 
 .card{
-
 background:#eee;
 width:420px;
 border-radius:12px;
 padding:30px;
 text-align:center;
-
 }
 
 .logo{
-
 width:90px;
 margin-bottom:10px;
-
 }
 
 input{
-
 width:100%;
 padding:12px;
 margin:8px 0;
 border-radius:6px;
 border:1px solid #ccc;
-
 }
 
 button{
-
 width:100%;
 padding:12px;
 margin-top:10px;
@@ -63,61 +54,62 @@ border:none;
 color:white;
 border-radius:6px;
 cursor:pointer;
-
+font-size:15px;
 }
 
 button:hover{
 background:#274a86;
 }
 
-.studentPhoto{
+.logout{
+background:#777;
+}
 
+.appeal{
+background:#d35400;
+}
+
+.appeal:hover{
+background:#b84300;
+}
+
+.studentPhoto{
 width:120px;
 height:120px;
 border-radius:50%;
 margin:auto;
 display:block;
-
 }
 
 table{
-
 width:100%;
 border-collapse:collapse;
 margin-top:20px;
-
 }
 
 th{
-
 background:#4e81bd;
 color:white;
 padding:10px;
-
 }
 
 td{
-
 padding:10px;
 border:1px solid #ddd;
-
 }
 
 .footer{
-
 margin-top:30px;
 color:white;
 font-size:14px;
-
+text-align:center;
 }
 
 .printArea{
-
 background:white;
 width:800px;
 padding:40px;
 display:none;
-
 }
 
 </style>
@@ -125,6 +117,7 @@ display:none;
 </head>
 
 <body>
+
 
 <div class="card" id="loginBox">
 
@@ -164,7 +157,9 @@ display:none;
 
 <button onclick="printResult()">Download Official Result</button>
 
-<button onclick="logout()" style="background:#777">Logout</button>
+<button class="appeal" onclick="openAppeal()">Submit Appeal</button>
+
+<button class="logout" onclick="logout()">Logout</button>
 
 <p style="font-size:12px;margin-top:15px">
 BL = Failed bylaw (Failed in the written Exam)
@@ -191,10 +186,8 @@ Designed by UEC ICT Department<br>
 <div style="display:flex;justify-content:space-between">
 
 <div>
-
 <p id="pname"></p>
 <p id="pid"></p>
-
 </div>
 
 <img id="pphoto" width="120">
@@ -226,6 +219,8 @@ Controller of Examinations Unit
 
 const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"
 
+
+
 async function login(){
 
 let id=document.getElementById("id").value
@@ -243,6 +238,8 @@ password:pass
 let data=await res.json()
 
 if(data.status=="success"){
+
+localStorage.setItem("student",JSON.stringify(data.student))
 
 showResult(data.student)
 
@@ -272,7 +269,6 @@ document.getElementById("pphoto").src=photoURL
 
 document.getElementById("pname").innerText="Student Name: "+s.name
 document.getElementById("pid").innerText="Student ID: "+s.id
-
 
 let table=document.getElementById("resultTable")
 let ptable=document.getElementById("ptable")
@@ -308,14 +304,6 @@ ptable.innerHTML+=`
 
 
 
-function logout(){
-
-location.reload()
-
-}
-
-
-
 function printResult(){
 
 let printContent=document.getElementById("printArea").innerHTML
@@ -325,6 +313,23 @@ let win=window.open()
 win.document.write(printContent)
 
 win.print()
+
+}
+
+
+
+function openAppeal(){
+
+window.location="appeal.html"
+
+}
+
+
+
+function logout(){
+
+localStorage.clear()
+location.reload()
 
 }
 
