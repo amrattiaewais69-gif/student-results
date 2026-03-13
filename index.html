@@ -1,183 +1,334 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
-<title>University of East Capital - Student Results</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<title>UEC Student Result Portal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
+
+*{
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
 body{
-    font-family:Segoe UI; background:linear-gradient(135deg,#1e3c72,#2a5298);
-    display:flex; justify-content:center; align-items:center; flex-direction:column;
-    min-height:100vh; margin:0;
+
+margin:0;
+background:#2f528f;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+
 }
+
 .card{
-    background:white; padding:30px; border-radius:12px;
-    box-shadow:0 20px 40px rgba(0,0,0,0.2); width:420px; text-align:center;
+
+background:#eee;
+width:420px;
+border-radius:12px;
+padding:30px;
+text-align:center;
+
 }
-.logo{ width:120px; margin-bottom:10px; }
-input{ width:100%; padding:10px; margin:10px 0; border-radius:6px; border:1px solid #ccc; }
-button{ background:#2a5298; color:white; border:none; padding:12px; width:100%; border-radius:6px; font-size:16px; cursor:pointer; }
-button:hover{ background:#1e3c72; }
-table{ width:100%; border-collapse:collapse; margin-top:20px; }
-table,th,td{ border:1px solid #ccc; }
-th,td{ padding:8px; text-align:center; }
-.student-photo{ width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:10px; }
-footer{ position:fixed; bottom:0; width:100%; text-align:center; background:rgba(0,0,0,0.3); color:#eee; padding:12px; font-size:13px; }
+
+.logo{
+
+width:90px;
+margin-bottom:10px;
+
+}
+
+input{
+
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:6px;
+border:1px solid #ccc;
+
+}
+
+button{
+
+width:100%;
+padding:12px;
+margin-top:10px;
+background:#345a9d;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+
+}
+
+button:hover{
+background:#274a86;
+}
+
+.studentPhoto{
+
+width:120px;
+height:120px;
+border-radius:50%;
+margin:auto;
+display:block;
+
+}
+
+table{
+
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+
+}
+
+th{
+
+background:#4e81bd;
+color:white;
+padding:10px;
+
+}
+
+td{
+
+padding:10px;
+border:1px solid #ddd;
+
+}
+
+.footer{
+
+margin-top:30px;
+color:white;
+font-size:14px;
+
+}
+
+.printArea{
+
+background:white;
+width:800px;
+padding:40px;
+display:none;
+
+}
+
 </style>
+
 </head>
+
 <body>
 
-<!-- LOGIN -->
 <div class="card" id="loginBox">
-    <img src="logo.png" class="logo">
-    <h2>🎓University of East Capital</h2>
-    <p>Student Result Portal</p>
-    <input id="id" placeholder="Student ID">
-    <input id="password" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
+
+<img src="logo.png" class="logo">
+
+<h2>🎓 University of East Capital</h2>
+
+<p>Student Result Portal</p>
+
+<input id="id" placeholder="Student ID">
+
+<input id="pass" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
 </div>
 
-<!-- RESULT -->
+
 <div class="card" id="resultBox" style="display:none">
-    <img id="studentPhoto" class="student-photo">
-    <h3 id="studentName"></h3>
-    <p>Student ID: <span id="studentID"></span></p>
-    <table>
-        <tr><th>Course</th><th>Grade</th></tr>
-        <tr><td>Normal Human Structure</td><td id="s1"></td></tr>
-        <tr><td>Body Function & Biochemistry</td><td id="s2"></td></tr>
-        <tr><td>Molecular Biology & Genetics</td><td id="s3"></td></tr>
-        <tr><td>Biomedical Research & Statistics</td><td id="s4"></td></tr>
-        <tr><td>Human Behaviour & Psychology</td><td id="s5"></td></tr>
-        <tr><td>Learning & Thinking Skills</td><td id="s6"></td></tr>
-        <tr><td>Critical Thinking</td><td id="s7"></td></tr>
-        <tr><td><b>GPA</b></td><td id="gpa"></td></tr>
-    </table>
 
-    <!-- زر التظلمات -->
-    <button id="appealBtn" onclick="goToAppeal()" style="background:#ff6600;margin-top:10px;">Submit Appeal</button>
-    <br><br>
-    <button onclick="downloadPDF()">Download Official Result</button>
-    <br><br>
-    <button onclick="logout()" style="background:#777">Logout</button>
-    <p style="margin-top:15px;font-size:13px;color:#555"> BL = Failed bylaw (Failed in the written Exam) </p>
+<img id="photo" class="studentPhoto">
+
+<h3 id="name"></h3>
+
+<p id="sid"></p>
+
+<table id="resultTable">
+
+<tr>
+<th>Course</th>
+<th>Grade</th>
+</tr>
+
+</table>
+
+<h3>GPA : <span id="gpa"></span></h3>
+
+<button onclick="printResult()">Download Official Result</button>
+
+<button onclick="logout()" style="background:#777">Logout</button>
+
+<p style="font-size:12px;margin-top:15px">
+BL = Failed bylaw (Failed in the written Exam)
+</p>
+
 </div>
 
-<footer id="footer">
-    Designed by UEC ICT Department<br> © 2026 University of East Capital. All Rights Reserved.
-</footer>
+
+<div class="footer">
+Designed by UEC ICT Department<br>
+© 2026 University of East Capital
+</div>
+
+
+
+<div class="printArea" id="printArea">
+
+<img src="logo.png" width="120">
+
+<h2 style="text-align:center">University of East Capital</h2>
+
+<p style="text-align:center">Final Result for Semester 1</p>
+
+<div style="display:flex;justify-content:space-between">
+
+<div>
+
+<p id="pname"></p>
+<p id="pid"></p>
+
+</div>
+
+<img id="pphoto" width="120">
+
+</div>
+
+<table style="width:100%;border-collapse:collapse;margin-top:30px" id="ptable">
+
+<tr style="background:#4e81bd;color:white">
+<th>Course</th>
+<th>Grade</th>
+</tr>
+
+</table>
+
+<div style="margin-top:60px;text-align:right">
+
+<hr style="width:250px;margin-left:auto">
+
+Controller of Examinations Unit
+
+</div>
+
+</div>
+
+
 
 <script>
-const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
-let currentStudent=null;
 
-function login(){
-    const id=document.getElementById("id").value.trim();
-    const password=document.getElementById("password").value.trim();
-    if(!id || !password){ alert("Please enter ID and Password"); return; }
+const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"
 
-    fetch(scriptURL,{
-        method:"POST",
-        body:new URLSearchParams({id,password})
-    })
-    .then(res=>res.json())
-    .then(data=>{
-        if(data.status=="error"){ alert(data.message); return; }
+async function login(){
 
-        currentStudent=data.student;
-        currentStudent.paidCourses = [];
-        if(currentStudent.payments && currentStudent.payments.length>0){
-            currentStudent.payments.forEach(p=>{
-                if(!currentStudent.paidCourses.includes(p.Course)){
-                    currentStudent.paidCourses.push(p.Course);
-                }
-            });
-        }
-        sessionStorage.setItem("studentData", JSON.stringify(currentStudent));
-        showResult();
-    })
-    .catch(()=>alert("Cannot connect to server. Please try again later."));
+let id=document.getElementById("id").value
+let pass=document.getElementById("pass").value
+
+let res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"login",
+id:id,
+password:pass
+})
+})
+
+let data=await res.json()
+
+if(data.status=="success"){
+
+showResult(data.student)
+
+}else{
+
+alert("Invalid ID or Password")
+
 }
 
-function showResult(){
-    if(!currentStudent){ logout(); return; }
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("resultBox").style.display="block";
-    document.getElementById("footer").style.display="none";
-
-    document.getElementById("studentName").innerText=currentStudent.name;
-    document.getElementById("studentID").innerText=currentStudent.id;
-    document.getElementById("s1").innerText=currentStudent.s1;
-    document.getElementById("s2").innerText=currentStudent.s2;
-    document.getElementById("s3").innerText=currentStudent.s3;
-    document.getElementById("s4").innerText=currentStudent.s4;
-    document.getElementById("s5").innerText=currentStudent.s5;
-    document.getElementById("s6").innerText=currentStudent.s6;
-    document.getElementById("s7").innerText=currentStudent.s7;
-    document.getElementById("gpa").innerText=currentStudent.gpa;
-
-    document.getElementById("studentPhoto").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
 }
 
-function goToAppeal(){
-    window.location.href="appeal.html";
+
+
+function showResult(s){
+
+document.getElementById("loginBox").style.display="none"
+document.getElementById("resultBox").style.display="block"
+
+document.getElementById("name").innerText=s.name
+document.getElementById("sid").innerText="Student ID: "+s.id
+document.getElementById("gpa").innerText=s.gpa
+
+let photoURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+s.id+".jpg"
+
+document.getElementById("photo").src=photoURL
+document.getElementById("pphoto").src=photoURL
+
+document.getElementById("pname").innerText="Student Name: "+s.name
+document.getElementById("pid").innerText="Student ID: "+s.id
+
+
+let table=document.getElementById("resultTable")
+let ptable=document.getElementById("ptable")
+
+for(let c in s.courses){
+
+let grade=s.courses[c]
+
+table.innerHTML+=`
+<tr>
+<td>${c}</td>
+<td>${grade}</td>
+</tr>
+`
+
+ptable.innerHTML+=`
+<tr>
+<td>${c}</td>
+<td>${grade}</td>
+</tr>
+`
+
 }
+
+ptable.innerHTML+=`
+<tr>
+<td><b>GPA</b></td>
+<td>${s.gpa}</td>
+</tr>
+`
+
+}
+
+
 
 function logout(){
-    currentStudent=null;
-    document.getElementById("resultBox").style.display="none";
-    document.getElementById("loginBox").style.display="block";
-    document.getElementById("footer").style.display="block";
-    document.getElementById("id").value="";
-    document.getElementById("password").value="";
-    sessionStorage.clear();
+
+location.reload()
+
 }
 
-// تحميل PDF
-async function downloadPDF(){
-    if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF();
-    const logoUrl="https://amrattiaewais69-gif.github.io/student-results/logo.png";
-    const logoRes=await fetch(logoUrl);
-    const logoBlob=await logoRes.blob();
-    const logoReader=new FileReader();
-    logoReader.onloadend=async function(){
-        doc.addImage(logoReader.result,"PNG",15,10,30,30);
-        doc.setFontSize(18);
-        doc.text("University of East Capital",105,20,{align:"center"});
-        doc.setFontSize(14);
-        doc.text("Final Result for Semester 1",105,30,{align:"center"});
-        doc.text("Student Name: "+currentStudent.name,20,50);
-        doc.text("Student ID: "+currentStudent.id,20,60);
-        const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
-        const imgRes=await fetch(imgUrl);
-        const imgBlob=await imgRes.blob();
-        const reader=new FileReader();
-        reader.onloadend=function(){
-            doc.addImage(reader.result,"JPEG",160,40,30,30);
-            doc.autoTable({ startY:80, head:[["Course","Grade"]], body:[
-                ["Normal Human Structure",currentStudent.s1],
-                ["Body Function & Biochemistry",currentStudent.s2],
-                ["Molecular Biology & Genetics",currentStudent.s3],
-                ["Biomedical Research & Statistics",currentStudent.s4],
-                ["Human Behaviour & Psychology",currentStudent.s5],
-                ["Learning & Thinking Skills",currentStudent.s6],
-                ["Critical Thinking",currentStudent.s7],
-                ["GPA",currentStudent.gpa]
-            ]});
-            let y=doc.lastAutoTable.finalY+25;
-            doc.line(130,y,190,y);
-            doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
-            doc.setFontSize(10);
-            doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
-            doc.save(currentStudent.id+"_UEC_Result.pdf");
-        };
-        reader.readAsDataURL(imgBlob);
-    };
-    logoReader.readAsDataURL(logoBlob);
+
+
+function printResult(){
+
+let printContent=document.getElementById("printArea").innerHTML
+
+let win=window.open()
+
+win.document.write(printContent)
+
+win.print()
+
 }
+
 </script>
+
 </body>
 </html>
