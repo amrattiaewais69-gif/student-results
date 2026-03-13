@@ -29,6 +29,7 @@ button:hover{background:#274a86;}
 <h3 id="name"></h3>
 <p id="sid"></p>
 
+<div id="appealSection">
 <label for="courseSelect"><strong>Select Course to Appeal:</strong></label>
 <table id="coursesTable">
 <tr><th>Select</th><th>Course</th></tr>
@@ -36,6 +37,8 @@ button:hover{background:#274a86;}
 
 <textarea id="reason" placeholder="Reason for Appeal"></textarea>
 <button onclick="submitAppeal()">Submit Appeal</button>
+</div>
+
 <button class="logout" onclick="logout()">Logout</button>
 
 <h3>Your Previous Appeals</h3>
@@ -58,20 +61,25 @@ document.getElementById("name").innerText=student.name;
 document.getElementById("sid").innerText="Student ID: "+student.id;
 document.getElementById("photo").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
 
-// --- Load Courses for New Appeals ---
+// Load Courses with Deadline Check
 async function loadCourses(){
   let res = await fetch(API,{method:"POST",body:JSON.stringify({action:"getAppealCourses",id:student.id})});
-  let courses = await res.json();
+  let data = await res.json();
+
+  if(data.status=="closed"){
+    document.getElementById("appealSection").innerHTML = `<p style="color:red;font-weight:bold;">${data.message}</p>`;
+    return;
+  }
+
   let table=document.getElementById("coursesTable");
-  courses.forEach(c=>{
+  data.courses.forEach(c=>{
     table.innerHTML+=`<tr><td><input type="radio" name="course" value="${c}"></td><td>${c}</td></tr>`;
   });
 }
 loadCourses();
 
-// --- Load Previous Appeals ---
+// Load Previous Appeals
 async function loadAppealHistory(){
-  // جلب كل الطلبات السابقة للطالب
   let res = await fetch(API,{method:"POST",body:JSON.stringify({action:"getAllAppeals",id:student.id})});
   let history = await res.json();
   let table=document.getElementById("appealHistoryTable");
@@ -87,7 +95,7 @@ async function loadAppealHistory(){
 }
 loadAppealHistory();
 
-// --- Submit New Appeal ---
+// Submit Appeal
 async function submitAppeal(){
   let course=document.querySelector('input[name="course"]:checked');
   let reason=document.getElementById("reason").value;
