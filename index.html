@@ -75,19 +75,47 @@ async function login(){
   try{
     let res=await fetch(API,{method:"POST",body:JSON.stringify({action:"login",id:id,password:pass})});
     let data=await res.json();
+    document.getElementById("loadingBox").style.display="none";
+
     if(data.status=="success"){
-      currentStudent=data.student;
-      document.getElementById("loadingBox").style.display="none";
-      showResult(currentStudent);
+      currentStudent = data.student;
+      localStorage.setItem("student",JSON.stringify(currentStudent));
+
+      if(data.student.firstLogin === false){
+        promptNewPassword(currentStudent.id);
+      }else{
+        showResult(currentStudent);
+      }
+
     }else{
       alert("Invalid ID or Password");
-      document.getElementById("loadingBox").style.display="none";
       document.getElementById("loginBox").style.display="block";
     }
   }catch(err){
     alert("Error connecting to server");
-    document.getElementById("loadingBox").style.display="none";
     document.getElementById("loginBox").style.display="block";
+  }
+}
+
+function promptNewPassword(studentId){
+  const newPass = prompt("This is your first login. Please set a new password:");
+  if(newPass && newPass.trim()!==""){
+    fetch(API,{
+      method:"POST",
+      body:JSON.stringify({action:"updatePassword",studentId:studentId,newPassword:newPass.trim()})
+    }).then(async res=>{
+      const result = await res.json();
+      if(result.status=="success"){
+        alert("Password updated successfully. Please login again.");
+        location.reload();
+      }else{
+        alert("Error updating password. Try again.");
+        location.reload();
+      }
+    });
+  }else{
+    alert("Password cannot be empty");
+    location.reload();
   }
 }
 
@@ -100,13 +128,14 @@ function showResult(s){
   document.getElementById("photo").src=photoURL;
 
   let table=document.getElementById("resultTable");
+  table.innerHTML='<tr><th>Course</th><th>Grade</th></tr>';
   for(let c in s.courses){
     table.innerHTML+=`<tr><td>${c}</td><td>${s.courses[c]}</td></tr>`;
   }
 }
 
 function openAppeal(){ window.location="appeal.html"; }
-function logout(){ location.reload(); }
+function logout(){ localStorage.clear(); location.reload(); }
 
 async function downloadPDF(){
     if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
@@ -122,7 +151,7 @@ async function downloadPDF(){
         doc.setFontSize(18);
         doc.text("University of East Capital",105,20,{align:"center"});
         doc.setFontSize(14);
-        doc.text("Final Result for Semester1",105,30,{align:"center"});
+        doc.text("Final Result",105,30,{align:"center"});
         doc.setFontSize(12);
         doc.text("Student Name: "+currentStudent.name,20,50);
         doc.text("Student ID: "+currentStudent.id,20,60);
