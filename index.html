@@ -144,67 +144,128 @@ function openAppeal(){ window.location="appeal.html"; }
 function logout(){ localStorage.clear(); location.reload(); }
 
 async function downloadPDF(){
-    if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF();
 
-    const logoUrl="https://amrattiaewais69-gif.github.io/student-results/logo.png";
-    const logoRes=await fetch(logoUrl);
-    const logoBlob=await logoRes.blob();
-    const logoReader=new FileReader();
-    logoReader.onloadend=async function(){
-        doc.addImage(logoReader.result,"PNG",15,10,30,30);
-        doc.setFontSize(20);
-        doc.setFont("helvetica","bold");
-        doc.text("University of East Capital",105,25,{align:"center"});
-        doc.setFontSize(16);
-        doc.setFont("helvetica","normal");
-        doc.text("Final Result for Semester 1",105,35,{align:"center"});
-        doc.setFontSize(13);
-        doc.text("Student Name: "+currentStudent.name,20,55);
-        doc.text("Student ID: "+currentStudent.id,20,65);
+if(!currentStudent){
+alert("Session expired. Please login again.");
+logout();
+return;
+}
 
-        const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
-        const imgRes=await fetch(imgUrl);
-        const imgBlob=await imgRes.blob();
-        const reader=new FileReader();
-        reader.onloadend=function(){
-            doc.addImage(reader.result,"JPEG",160,50,30,30);
+const {jsPDF}=window.jspdf;
+const doc=new jsPDF();
 
-            const bodyData=[];
-            for(let c in currentStudent.courses){
-                bodyData.push([c,currentStudent.courses[c]]);
-            }
-            bodyData.push(["GPA",currentStudent.gpa]);
+const logoUrl="https://amrattiaewais69-gif.github.io/student-results/logo.png";
 
-            doc.autoTable({
-                startY:90,
-                head:[["Course","Grade"]],
-                body:bodyData,
-                theme:'grid',
-                headStyles:{
-                    fillColor:[78,129,189],
-                    textColor:255,
-                    halign:'center',
-                    fontStyle:'bold'
-                },
-                bodyStyles:{halign:'center',fontSize:12,cellPadding:3},
-                alternateRowStyles:{fillColor:[240,240,240]},
-                columnStyles:{0:{cellWidth:120},1:{cellWidth:40}}
-            });
+const logoRes=await fetch(logoUrl);
+const logoBlob=await logoRes.blob();
 
-            const y=doc.lastAutoTable.finalY+20;
-            doc.line(130,y,190,y);
-            doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
-            doc.setFontSize(10);
-            doc.setFont("helvetica","normal");
-            doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
+const logoReader=new FileReader();
 
-            doc.save(currentStudent.id+"_UEC_Result.pdf");
-        };
-        reader.readAsDataURL(imgBlob);
-    };
-    logoReader.readAsDataURL(logoBlob);
+logoReader.onloadend=async function(){
+
+doc.addImage(logoReader.result,"PNG",15,10,30,30);
+
+doc.setFontSize(20);
+doc.setFont("helvetica","bold");
+doc.text("University of East Capital",105,25,{align:"center"});
+
+doc.setFontSize(16);
+doc.setFont("helvetica","normal");
+doc.text("Final Result for Semester 1",105,35,{align:"center"});
+
+doc.setFontSize(12);  
+doc.text("Student Name: "+currentStudent.name,20,55);
+doc.text("Student ID: "+currentStudent.id,20,65);
+
+const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
+
+const imgRes=await fetch(imgUrl);
+const imgBlob=await imgRes.blob();
+
+const reader=new FileReader();
+
+reader.onloadend=function(){
+
+doc.addImage(reader.result,"JPEG",160,50,30,30);
+
+const bodyData=[];
+
+for(let c in currentStudent.courses){
+
+bodyData.push([c,currentStudent.courses[c]]);
+
+}
+
+bodyData.push(["GPA",currentStudent.gpa]);
+
+doc.autoTable({
+startY:90,
+head:[["Course","Grade"]],
+body:bodyData,
+theme:'grid',
+headStyles:{
+fillColor:[78,129,189],
+textColor:255,
+halign:'center',
+fontStyle:'bold'
+},
+bodyStyles:{
+halign:'center',
+fontSize:12,
+cellPadding:5
+},
+alternateRowStyles:{
+fillColor:[240,240,240]
+},
+columnStyles:{
+0:{cellWidth:120},
+1:{cellWidth:40}
+}
+});
+
+let y=doc.lastAutoTable.finalY+20;
+
+doc.line(130,y,190,y);
+doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
+
+doc.setFontSize(10);
+doc.setFont("helvetica","normal");
+doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
+
+
+// ============================
+// QR CODE SECTION
+// ============================
+
+const verifyLink="https://amrattiaewais69-gif.github.io/student-results/verify.html?id="+currentStudent.id;
+
+const qrImage="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data="+encodeURIComponent(verifyLink);
+
+const qr=new Image();
+
+qr.crossOrigin="Anonymous";
+
+qr.onload=function(){
+
+doc.addImage(qr,"PNG",15,y-10,35,35);
+
+doc.setFontSize(10);
+doc.text("Scan to Verify Result",18,y+30);
+
+doc.save(currentStudent.id+"_UEC_Result.pdf");
+
+};
+
+qr.src=qrImage;
+
+};
+
+reader.readAsDataURL(imgBlob);
+
+};
+
+logoReader.readAsDataURL(logoBlob);
+
 }
 </script>
 
