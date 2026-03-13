@@ -160,7 +160,7 @@ async function downloadPDF(){
         doc.setFontSize(16);
         doc.setFont("helvetica","normal");
         doc.text("Final Result for Semester 1",105,35,{align:"center"});
-        doc.setFontSize(12);
+        doc.setFontSize(13);
         doc.text("Student Name: "+currentStudent.name,20,55);
         doc.text("Student ID: "+currentStudent.id,20,65);
 
@@ -188,7 +188,7 @@ async function downloadPDF(){
                     halign:'center',
                     fontStyle:'bold'
                 },
-                bodyStyles:{halign:'center',fontSize:12,cellPadding:5},
+                bodyStyles:{halign:'center',fontSize:12,cellPadding:3},
                 alternateRowStyles:{fillColor:[240,240,240]},
                 columnStyles:{0:{cellWidth:120},1:{cellWidth:40}}
             });
@@ -197,7 +197,7 @@ async function downloadPDF(){
             doc.line(130,y,190,y);
             doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
             doc.setFontSize(10);
-            doc.setFont("helvetica","italic");
+            doc.setFont("helvetica","normal");
             doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
 
             doc.save(currentStudent.id+"_UEC_Result.pdf");
