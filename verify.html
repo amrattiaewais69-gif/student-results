@@ -4,38 +4,89 @@
 <meta charset="UTF-8">
 <title>UEC Result Verification</title>
 <style>
-body{font-family:Arial; background:#2f528f; color:white; text-align:center; padding-top:100px;}
-.card{background:white;color:black;width:400px;margin:auto;padding:30px;border-radius:10px;}
+body {
+  font-family: Arial, sans-serif;
+  background: #2f528f;
+  color: white;
+  text-align: center;
+  padding-top: 50px;
+}
+.card {
+  background: white;
+  color: black;
+  width: 500px;
+  margin: auto;
+  padding: 30px;
+  border-radius: 10px;
+}
+table {
+  border-collapse: collapse;
+  margin: 10px auto;
+  width: 90%;
+}
+table, th, td {
+  border: 1px solid black;
+  padding: 8px;
+  text-align: center;
+}
+th {
+  background-color: #4e81bd;
+  color: white;
+}
 </style>
 </head>
 <body>
 <div class="card">
-<h2>Result Verification</h2>
-<p id="result"></p>
+  <h2>Result Verification</h2>
+  <p id="result"></p>
 </div>
-<script>
-const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
+<script>
+// ضع هنا رابط الـ Apps Script الخاص بك
+const API = "PUT_YOUR_APPS_SCRIPT_URL_HERE";
+
+// جلب الـ ID من الرابط (QR)
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
 if(id){
-fetch(API,{
-method:"POST",
-body:JSON.stringify({action:"verifyStudent",id:id})
-})
-.then(res=>res.json())
-.then(data=>{
-if(data.status=="success"){
-document.getElementById("result").innerHTML=
-"<b>Name:</b> "+data.student.name+"<br>"+
-"<b>ID:</b> "+data.student.id+"<br>"+
-"<b>GPA:</b> "+data.student.gpa+"<br>"+
-"<b>Status:</b> Verified ✔";
-}else{
-document.getElementById("result").innerHTML="Result not found";
-}
-});
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "verifyStudent",
+      id: id
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.status == "success"){
+
+      let html = "<b>Name:</b> "+data.student.name+"<br>";
+      html += "<b>ID:</b> "+data.student.id+"<br><br>";
+
+      html += "<b>Results:</b><br>";
+      html += "<table>";
+      html += "<tr><th>Course</th><th>Grade</th></tr>";
+
+      for(let c in data.student.courses){
+        html += "<tr><td>"+c+"</td><td>"+data.student.courses[c]+"</td></tr>";
+      }
+
+      html += "<tr><td><b>GPA</b></td><td><b>"+data.student.gpa+"</b></td></tr>";
+      html += "</table><br><b>Status:</b> Verified ✔";
+
+      document.getElementById("result").innerHTML = html;
+
+    } else {
+      document.getElementById("result").innerHTML = "Result not found";
+    }
+  })
+  .catch(err => {
+    document.getElementById("result").innerHTML = "Error connecting to server";
+    console.error(err);
+  });
+} else {
+  document.getElementById("result").innerHTML = "No ID provided";
 }
 </script>
 </body>
