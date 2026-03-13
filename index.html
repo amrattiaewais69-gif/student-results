@@ -1,338 +1,144 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8">
 <title>UEC Student Result Portal</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
 <style>
-
-*{
-box-sizing:border-box;
-font-family:'Poppins',sans-serif;
-}
-
-body{
-margin:0;
-background:#2f528f;
-min-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-}
-
-.card{
-background:#eee;
-width:420px;
-border-radius:12px;
-padding:30px;
-text-align:center;
-}
-
-.logo{
-width:90px;
-margin-bottom:10px;
-}
-
-input{
-width:100%;
-padding:12px;
-margin:8px 0;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
-button{
-width:100%;
-padding:12px;
-margin-top:10px;
-background:#345a9d;
-border:none;
-color:white;
-border-radius:6px;
-cursor:pointer;
-font-size:15px;
-}
-
-button:hover{
-background:#274a86;
-}
-
-.logout{
-background:#777;
-}
-
-.appeal{
-background:#d35400;
-}
-
-.appeal:hover{
-background:#b84300;
-}
-
-.studentPhoto{
-width:120px;
-height:120px;
-border-radius:50%;
-margin:auto;
-display:block;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:20px;
-}
-
-th{
-background:#4e81bd;
-color:white;
-padding:10px;
-}
-
-td{
-padding:10px;
-border:1px solid #ddd;
-}
-
-.footer{
-margin-top:30px;
-color:white;
-font-size:14px;
-text-align:center;
-}
-
-.printArea{
-background:white;
-width:800px;
-padding:40px;
-display:none;
-}
-
+*{box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.card{background:#eee;width:420px;border-radius:12px;padding:30px;text-align:center;}
+.logo{width:90px;margin-bottom:10px;}
+input{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ccc;}
+button{width:100%;padding:12px;margin-top:10px;background:#345a9d;border:none;color:white;border-radius:6px;cursor:pointer;font-size:15px;}
+button:hover{background:#274a86;}
+.logout{background:#777;}
+.appeal{background:#d35400;}
+.appeal:hover{background:#b84300;}
+.studentPhoto{width:120px;height:120px;border-radius:50%;margin:auto;display:block;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th{background:#4e81bd;color:white;padding:10px;}
+td{padding:10px;border:1px solid #ddd;}
+.footer{margin-top:30px;color:white;font-size:14px;text-align:center;}
+.printArea{background:white;width:800px;padding:40px;display:none;}
 </style>
-
 </head>
-
 <body>
 
-
+<!-- Login Card -->
 <div class="card" id="loginBox">
-
 <img src="logo.png" class="logo">
-
 <h2>🎓 University of East Capital</h2>
-
 <p>Student Result Portal</p>
-
 <input id="id" placeholder="Student ID">
-
 <input id="pass" type="password" placeholder="Password">
-
 <button onclick="login()">Login</button>
-
 </div>
 
+<!-- Loading Card -->
+<div class="card" id="loadingBox" style="display:none">
+  <h3>Loading your data...</h3>
+</div>
 
+<!-- Result Card -->
 <div class="card" id="resultBox" style="display:none">
-
 <img id="photo" class="studentPhoto">
-
 <h3 id="name"></h3>
-
 <p id="sid"></p>
-
 <table id="resultTable">
-
-<tr>
-<th>Course</th>
-<th>Grade</th>
-</tr>
-
+<tr><th>Course</th><th>Grade</th></tr>
 </table>
-
 <h3>GPA : <span id="gpa"></span></h3>
-
 <button onclick="printResult()">Download Official Result</button>
-
 <button class="appeal" onclick="openAppeal()">Submit Appeal</button>
-
 <button class="logout" onclick="logout()">Logout</button>
-
-<p style="font-size:12px;margin-top:15px">
-BL = Failed bylaw (Failed in the written Exam)
-</p>
-
 </div>
-
 
 <div class="footer">
 Designed by UEC ICT Department<br>
 © 2026 University of East Capital
 </div>
 
-
-
+<!-- Print Template -->
 <div class="printArea" id="printArea">
-
 <img src="logo.png" width="120">
-
 <h2 style="text-align:center">University of East Capital</h2>
-
-<p style="text-align:center">Final Result for Semester 1</p>
-
+<p style="text-align:center">Final Result</p>
 <div style="display:flex;justify-content:space-between">
-
-<div>
-<p id="pname"></p>
-<p id="pid"></p>
-</div>
-
+<div><p id="pname"></p><p id="pid"></p></div>
 <img id="pphoto" width="120">
-
 </div>
-
 <table style="width:100%;border-collapse:collapse;margin-top:30px" id="ptable">
-
-<tr style="background:#4e81bd;color:white">
-<th>Course</th>
-<th>Grade</th>
-</tr>
-
+<tr style="background:#4e81bd;color:white"><th>Course</th><th>Grade</th></tr>
 </table>
-
 <div style="margin-top:60px;text-align:right">
-
 <hr style="width:250px;margin-left:auto">
-
 Controller of Examinations Unit
-
 </div>
-
 </div>
-
-
 
 <script>
-
-const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"
-
-
+const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
 async function login(){
+  let id=document.getElementById("id").value;
+  let pass=document.getElementById("pass").value;
 
-let id=document.getElementById("id").value
-let pass=document.getElementById("pass").value
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("loadingBox").style.display="block";
 
-let res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({
-action:"login",
-id:id,
-password:pass
-})
-})
-
-let data=await res.json()
-
-if(data.status=="success"){
-
-localStorage.setItem("student",JSON.stringify(data.student))
-
-showResult(data.student)
-
-}else{
-
-alert("Invalid ID or Password")
-
+  try{
+    let res=await fetch(API,{
+      method:"POST",
+      body:JSON.stringify({action:"login",id:id,password:pass})
+    });
+    let data=await res.json();
+    if(data.status=="success"){
+      localStorage.setItem("student",JSON.stringify(data.student));
+      document.getElementById("loadingBox").style.display="none";
+      showResult(data.student);
+    }else{
+      alert("Invalid ID or Password");
+      document.getElementById("loadingBox").style.display="none";
+      document.getElementById("loginBox").style.display="block";
+    }
+  }catch(err){
+    alert("Error connecting to server");
+    document.getElementById("loadingBox").style.display="none";
+    document.getElementById("loginBox").style.display="block";
+  }
 }
-
-}
-
-
 
 function showResult(s){
+  document.getElementById("resultBox").style.display="block";
+  document.getElementById("name").innerText=s.name;
+  document.getElementById("sid").innerText="Student ID: "+s.id;
+  document.getElementById("gpa").innerText=s.gpa;
+  let photoURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+s.id+".jpg";
+  document.getElementById("photo").src=photoURL;
+  document.getElementById("pphoto").src=photoURL;
+  document.getElementById("pname").innerText="Student Name: "+s.name;
+  document.getElementById("pid").innerText="Student ID: "+s.id;
 
-document.getElementById("loginBox").style.display="none"
-document.getElementById("resultBox").style.display="block"
-
-document.getElementById("name").innerText=s.name
-document.getElementById("sid").innerText="Student ID: "+s.id
-document.getElementById("gpa").innerText=s.gpa
-
-let photoURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+s.id+".jpg"
-
-document.getElementById("photo").src=photoURL
-document.getElementById("pphoto").src=photoURL
-
-document.getElementById("pname").innerText="Student Name: "+s.name
-document.getElementById("pid").innerText="Student ID: "+s.id
-
-let table=document.getElementById("resultTable")
-let ptable=document.getElementById("ptable")
-
-for(let c in s.courses){
-
-let grade=s.courses[c]
-
-table.innerHTML+=`
-<tr>
-<td>${c}</td>
-<td>${grade}</td>
-</tr>
-`
-
-ptable.innerHTML+=`
-<tr>
-<td>${c}</td>
-<td>${grade}</td>
-</tr>
-`
-
+  let table=document.getElementById("resultTable");
+  let ptable=document.getElementById("ptable");
+  for(let c in s.courses){
+    let grade=s.courses[c];
+    table.innerHTML+=`<tr><td>${c}</td><td>${grade}</td></tr>`;
+    ptable.innerHTML+=`<tr><td>${c}</td><td>${grade}</td></tr>`;
+  }
+  ptable.innerHTML+=`<tr><td><b>GPA</b></td><td>${s.gpa}</td></tr>`;
 }
-
-ptable.innerHTML+=`
-<tr>
-<td><b>GPA</b></td>
-<td>${s.gpa}</td>
-</tr>
-`
-
-}
-
-
 
 function printResult(){
-
-let printContent=document.getElementById("printArea").innerHTML
-
-let win=window.open()
-
-win.document.write(printContent)
-
-win.print()
-
+  let printContent=document.getElementById("printArea").innerHTML;
+  let win=window.open();
+  win.document.write(printContent);
+  win.print();
 }
 
-
-
-function openAppeal(){
-
-window.location="appeal.html"
-
-}
-
-
-
-function logout(){
-
-localStorage.clear()
-location.reload()
-
-}
-
+function openAppeal(){ window.location="appeal.html"; }
+function logout(){ localStorage.clear(); location.reload(); }
 </script>
 
 </body>
