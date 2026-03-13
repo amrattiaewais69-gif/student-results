@@ -3,76 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <title>UEC Result Verification</title>
-
 <style>
-
-body{
-font-family:Arial;
-background:#2f528f;
-color:white;
-text-align:center;
-padding-top:100px;
-}
-
-.card{
-background:white;
-color:black;
-width:400px;
-margin:auto;
-padding:30px;
-border-radius:10px;
-}
-
+body{font-family:Arial; background:#2f528f; color:white; text-align:center; padding-top:100px;}
+.card{background:white;color:black;width:400px;margin:auto;padding:30px;border-radius:10px;}
 </style>
-
 </head>
-
 <body>
-
 <div class="card">
-
 <h2>Result Verification</h2>
-
 <p id="result"></p>
-
 </div>
-
 <script>
-
 const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
+if(id){
 fetch(API,{
 method:"POST",
-body:JSON.stringify({
-action:"login",
-id:id,
-password:"VERIFY"
-})
+body:JSON.stringify({action:"verifyStudent",id:id})
 })
 .then(res=>res.json())
 .then(data=>{
-
 if(data.status=="success"){
-
 document.getElementById("result").innerHTML=
-
-"<b>Name:</b> "+data.student.name+"<br><br>"+
-"<b>ID:</b> "+data.student.id+"<br><br>"+
-"<b>GPA:</b> "+data.student.gpa+"<br><br>"+
+"<b>Name:</b> "+data.student.name+"<br>"+
+"<b>ID:</b> "+data.student.id+"<br>"+
+"<b>GPA:</b> "+data.student.gpa+"<br>"+
 "<b>Status:</b> Verified ✔";
-
 }else{
-
 document.getElementById("result").innerHTML="Result not found";
-
 }
-
-})
-
+});
+}
 </script>
-
 </body>
 </html>
