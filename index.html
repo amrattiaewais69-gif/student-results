@@ -200,7 +200,28 @@ async function downloadPDF(){
             doc.setFont("helvetica","normal");
             doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
 
-            doc.save(currentStudent.id+"_UEC_Result.pdf");
+const qrURL = "https://amrattiaewais69-gif.github.io/student-results/verify.html?id="+currentStudent.id;
+
+const qrAPI = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data="+encodeURIComponent(qrURL);
+
+const qrRes = await fetch(qrAPI);
+const qrBlob = await qrRes.blob();
+
+const qrReader = new FileReader();
+
+qrReader.onloadend=function(){
+
+doc.addImage(qrReader.result,"PNG",15,220,35,35);
+
+doc.text("Scan to Verify",18,260);
+
+doc.save(currentStudent.id+"_UEC_Result.pdf");
+
+}
+
+qrReader.readAsDataURL(qrBlob);
+
+            //doc.save(currentStudent.id+"_UEC_Result.pdf");
         };
         reader.readAsDataURL(imgBlob);
     };
