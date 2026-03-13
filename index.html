@@ -6,8 +6,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <style>
-body{ font-family:Segoe UI; background:linear-gradient(135deg,#1e3c72,#2a5298); display:flex; justify-content:center; align-items:center; flex-direction:column; min-height:100vh; margin:0; }
-.card{ background:white; padding:30px; border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.2); width:420px; text-align:center; }
+body{
+    font-family:Segoe UI; background:linear-gradient(135deg,#1e3c72,#2a5298);
+    display:flex; justify-content:center; align-items:center; flex-direction:column;
+    min-height:100vh; margin:0;
+}
+.card{
+    background:white; padding:30px; border-radius:12px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.2); width:420px; text-align:center;
+}
 .logo{ width:120px; margin-bottom:10px; }
 input{ width:100%; padding:10px; margin:10px 0; border-radius:6px; border:1px solid #ccc; }
 button{ background:#2a5298; color:white; border:none; padding:12px; width:100%; border-radius:6px; font-size:16px; cursor:pointer; }
@@ -70,7 +77,7 @@ footer{ position:fixed; bottom:0; width:100%; text-align:center; background:rgba
 </footer>
 
 <script>
-const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+const scriptURL="https://https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"; // ضع هنا رابط Google Apps Script
 let currentStudent=null;
 
 window.onload=function(){ logout(); };
@@ -90,15 +97,18 @@ function login(){
 
         currentStudent=data.student;
 
-        // ======= تحويل الصفوف لمصفوفة paidCourses =======
+        // تجهيز paidCourses من بيانات الدفع
         currentStudent.paidCourses = [];
         if(currentStudent.payments && currentStudent.payments.length>0){
-            currentStudent.payments.forEach(p => {
+            currentStudent.payments.forEach(p=>{
                 if(!currentStudent.paidCourses.includes(p.Course)){
                     currentStudent.paidCourses.push(p.Course);
                 }
             });
         }
+
+        // حفظ بيانات الطالب كاملة في sessionStorage
+        sessionStorage.setItem("studentData", JSON.stringify(currentStudent));
 
         if(currentStudent.firstLogin){
             document.getElementById("loginBox").style.display="none";
@@ -117,7 +127,7 @@ function changePassword(){
 
     fetch(scriptURL,{
         method:"POST",
-        body:new URLSearchParams({ id:currentStudent.ID, newPassword:newPass })
+        body:new URLSearchParams({ id:currentStudent.id, newPassword:newPass })
     })
     .then(res=>res.json())
     .then(()=>{ alert("Password updated successfully"); showResult(); });
@@ -131,7 +141,7 @@ function showResult(){
     document.getElementById("footer").style.display="none";
 
     document.getElementById("studentName").innerText=currentStudent.name;
-    document.getElementById("studentID").innerText=currentStudent.ID;
+    document.getElementById("studentID").innerText=currentStudent.id;
     document.getElementById("s1").innerText=currentStudent.s1;
     document.getElementById("s2").innerText=currentStudent.s2;
     document.getElementById("s3").innerText=currentStudent.s3;
@@ -141,16 +151,11 @@ function showResult(){
     document.getElementById("s7").innerText=currentStudent.s7;
     document.getElementById("gpa").innerText=currentStudent.gpa;
 
-    document.getElementById("studentPhoto").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.ID+".jpg";
-
-    // اظهار زر التظلمات دائمًا لو فيه أي مادة مدفوعة
-    if(currentStudent.paidCourses && currentStudent.paidCourses.length>0){
-        document.getElementById("appealBtn").style.display="block";
-    }
+    document.getElementById("studentPhoto").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
 }
 
 function goToAppeal(){
-    window.location.href="appeal.html?id="+currentStudent.ID;
+    window.location.href="appeal.html";
 }
 
 function logout(){
@@ -161,9 +166,10 @@ function logout(){
     document.getElementById("footer").style.display="block";
     document.getElementById("id").value="";
     document.getElementById("password").value="";
+    sessionStorage.clear();
 }
 
-// دالة تحميل PDF
+// تحميل PDF
 async function downloadPDF(){
     if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
     const {jsPDF}=window.jspdf;
@@ -179,9 +185,8 @@ async function downloadPDF(){
         doc.setFontSize(14);
         doc.text("Final Result for Semester 1",105,30,{align:"center"});
         doc.text("Student Name: "+currentStudent.name,20,50);
-        doc.text("Student ID: "+currentStudent.ID,20,60);
-
-        const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.ID+".jpg";
+        doc.text("Student ID: "+currentStudent.id,20,60);
+        const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
         const imgRes=await fetch(imgUrl);
         const imgBlob=await imgRes.blob();
         const reader=new FileReader();
@@ -202,7 +207,7 @@ async function downloadPDF(){
             doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
             doc.setFontSize(10);
             doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
-            doc.save(currentStudent.ID+"_UEC_Result.pdf");
+            doc.save(currentStudent.id+"_UEC_Result.pdf");
         };
         reader.readAsDataURL(imgBlob);
     };
