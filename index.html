@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>UEC Student Result Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <style>
 *{box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
@@ -20,7 +22,6 @@ table{width:100%;border-collapse:collapse;margin-top:20px;}
 th{background:#4e81bd;color:white;padding:10px;}
 td{padding:10px;border:1px solid #ddd;}
 .footer{margin-top:30px;color:white;font-size:14px;text-align:center;}
-.printArea{background:white;width:800px;padding:40px;display:none;}
 </style>
 </head>
 <body>
@@ -49,10 +50,9 @@ td{padding:10px;border:1px solid #ddd;}
 <tr><th>Course</th><th>Grade</th></tr>
 </table>
 <h3>GPA : <span id="gpa"></span></h3>
-<button onclick="printResult()">Download Official Result</button>
+<button onclick="downloadPDF()">Download Official Result</button>
 <button class="appeal" onclick="openAppeal()">Submit Appeal</button>
 <button class="logout" onclick="logout()">Logout</button>
-<p style="margin-top:15px;font-size:13px;color:#555"> BL = Failed bylaw (Failed in the written Exam) </p>
 </div>
 
 <div class="footer">
@@ -60,26 +60,9 @@ Designed by UEC ICT Department<br>
 © 2026 University of East Capital
 </div>
 
-<!-- Print Template -->
-<div class="printArea" id="printArea">
-<img src="logo.png" width="120">
-<h2 style="text-align:center">University of East Capital</h2>
-<p style="text-align:center">Final Result</p>
-<div style="display:flex;justify-content:space-between">
-<div><p id="pname"></p><p id="pid"></p></div>
-<img id="pphoto" width="120">
-</div>
-<table style="width:100%;border-collapse:collapse;margin-top:30px" id="ptable">
-<tr style="background:#4e81bd;color:white"><th>Course</th><th>Grade</th></tr>
-</table>
-<div style="margin-top:60px;text-align:right">
-<hr style="width:250px;margin-left:auto">
-Controller of Examinations Unit
-</div>
-</div>
-
 <script>
 const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+let currentStudent=null;
 
 async function login(){
   let id=document.getElementById("id").value;
@@ -89,15 +72,12 @@ async function login(){
   document.getElementById("loadingBox").style.display="block";
 
   try{
-    let res=await fetch(API,{
-      method:"POST",
-      body:JSON.stringify({action:"login",id:id,password:pass})
-    });
+    let res=await fetch(API,{method:"POST",body:JSON.stringify({action:"login",id:id,password:pass})});
     let data=await res.json();
     if(data.status=="success"){
-      localStorage.setItem("student",JSON.stringify(data.student));
+      currentStudent=data.student;
       document.getElementById("loadingBox").style.display="none";
-      showResult(data.student);
+      showResult(currentStudent);
     }else{
       alert("Invalid ID or Password");
       document.getElementById("loadingBox").style.display="none";
@@ -117,29 +97,67 @@ function showResult(s){
   document.getElementById("gpa").innerText=s.gpa;
   let photoURL="https://amrattiaewais69-gif.github.io/student-results/photos/"+s.id+".jpg";
   document.getElementById("photo").src=photoURL;
-  document.getElementById("pphoto").src=photoURL;
-  document.getElementById("pname").innerText="Student Name: "+s.name;
-  document.getElementById("pid").innerText="Student ID: "+s.id;
 
   let table=document.getElementById("resultTable");
-  let ptable=document.getElementById("ptable");
   for(let c in s.courses){
-    let grade=s.courses[c];
-    table.innerHTML+=`<tr><td>${c}</td><td>${grade}</td></tr>`;
-    ptable.innerHTML+=`<tr><td>${c}</td><td>${grade}</td></tr>`;
+    table.innerHTML+=`<tr><td>${c}</td><td>${s.courses[c]}</td></tr>`;
   }
-  ptable.innerHTML+=`<tr><td><b>GPA</b></td><td>${s.gpa}</td></tr>`;
-}
-
-function printResult(){
-  let printContent=document.getElementById("printArea").innerHTML;
-  let win=window.open();
-  win.document.write(printContent);
-  win.print();
 }
 
 function openAppeal(){ window.location="appeal.html"; }
-function logout(){ localStorage.clear(); location.reload(); }
+function logout(){ location.reload(); }
+
+async function downloadPDF(){
+    if(!currentStudent){ alert("Session expired. Please login again."); logout(); return; }
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF();
+
+    const logoUrl="https://amrattiaewais69-gif.github.io/student-results/logo.png";
+    const logoRes=await fetch(logoUrl);
+    const logoBlob=await logoRes.blob();
+    const logoReader=new FileReader();
+    logoReader.onloadend=async function(){
+        doc.addImage(logoReader.result,"PNG",15,10,30,30);
+        doc.setFontSize(18);
+        doc.text("University of East Capital",105,20,{align:"center"});
+        doc.setFontSize(14);
+        doc.text("Final Result",105,30,{align:"center"});
+        doc.setFontSize(12);
+        doc.text("Student Name: "+currentStudent.name,20,50);
+        doc.text("Student ID: "+currentStudent.id,20,60);
+
+        const imgUrl="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
+        const imgRes=await fetch(imgUrl);
+        const imgBlob=await imgRes.blob();
+        const reader=new FileReader();
+        reader.onloadend=function(){
+            doc.addImage(reader.result,"JPEG",160,40,30,30);
+            const bodyData=[];
+            for(let c in currentStudent.courses){
+                bodyData.push([c,currentStudent.courses[c]]);
+            }
+            bodyData.push(["GPA",currentStudent.gpa]);
+
+            doc.autoTable({
+                startY:80,
+                head:[["Course","Grade"]],
+                body:bodyData,
+                theme:'grid',
+                headStyles:{fillColor:[78,129,189],textColor:255,halign:'center'},
+                bodyStyles:{halign:'center'}
+            });
+
+            const y=doc.lastAutoTable.finalY+25;
+            doc.line(130,y,190,y);
+            doc.text("Controller of Examinations Unit",160,y+8,{align:"center"});
+            doc.setFontSize(10);
+            doc.text("BL = Failed bylaw (Failed in the written Exam)",20,y+25);
+            doc.save(currentStudent.id+"_UEC_Result.pdf");
+        };
+        reader.readAsDataURL(imgBlob);
+    };
+    logoReader.readAsDataURL(logoBlob);
+}
 </script>
 
 </body>
