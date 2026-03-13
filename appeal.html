@@ -1,269 +1,84 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
 <meta charset="UTF-8">
 <title>UEC Appeal Portal</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
 <style>
-
-*{
-box-sizing:border-box;
-font-family:'Poppins',sans-serif;
-}
-
-body{
-margin:0;
-background:#2f528f;
-min-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-}
-
-.card{
-background:#eee;
-width:420px;
-border-radius:12px;
-padding:30px;
-text-align:center;
-}
-
-.logo{
-width:90px;
-margin-bottom:10px;
-}
-
-.studentPhoto{
-width:120px;
-height:120px;
-border-radius:50%;
-margin:auto;
-display:block;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:20px;
-}
-
-th{
-background:#4e81bd;
-color:white;
-padding:10px;
-}
-
-td{
-padding:10px;
-border:1px solid #ddd;
-}
-
-textarea{
-width:100%;
-margin-top:10px;
-padding:10px;
-border-radius:6px;
-border:1px solid #ccc;
-height:90px;
-}
-
-button{
-width:100%;
-padding:12px;
-margin-top:10px;
-background:#345a9d;
-border:none;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
-
-button:hover{
-background:#274a86;
-}
-
-.logout{
-background:#777;
-}
-
-.footer{
-margin-top:30px;
-color:white;
-font-size:14px;
-text-align:center;
-}
-
+*{box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.card{background:#eee;width:420px;border-radius:12px;padding:30px;text-align:center;}
+.logo{width:90px;margin-bottom:10px;}
+.studentPhoto{width:120px;height:120px;border-radius:50%;margin:auto;display:block;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th{background:#4e81bd;color:white;padding:10px;}
+td{padding:10px;border:1px solid #ddd;}
+textarea{width:100%;margin-top:10px;padding:10px;border-radius:6px;border:1px solid #ccc;height:90px;}
+button{width:100%;padding:12px;margin-top:10px;background:#345a9d;border:none;color:white;border-radius:6px;cursor:pointer;}
+button:hover{background:#274a86;}
+.logout{background:#777;}
+.footer{margin-top:30px;color:white;font-size:14px;text-align:center;}
 </style>
-
 </head>
-
-
 <body>
 
+<div class="card" id="loadingBox" style="display:none"><h3>Loading your data...</h3></div>
+
 <div class="card">
-
 <img src="logo.png" class="logo">
-
 <h2>Appeal Request</h2>
-
 <img id="photo" class="studentPhoto">
-
 <h3 id="name"></h3>
-
 <p id="sid"></p>
 
-
 <table id="coursesTable">
-
-<tr>
-<th>Select</th>
-<th>Course</th>
-</tr>
-
+<tr><th>Select</th><th>Course</th></tr>
 </table>
 
-
 <textarea id="reason" placeholder="Reason for Appeal"></textarea>
-
 <button onclick="submitAppeal()">Submit Appeal</button>
-
 <button onclick="goBack()">Back to Result</button>
-
 <button class="logout" onclick="logout()">Logout</button>
-
 </div>
-
 
 <div class="footer">
-
 Designed by UEC ICT Department<br>
 © 2026 University of East Capital
-
 </div>
 
-
 <script>
+const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"
+let student=JSON.parse(localStorage.getItem("student"));
+if(!student){ location="index.html"; }
 
-let student=JSON.parse(localStorage.getItem("student"))
-
-if(!student){
-
-location="index.html"
-
-}
-
-document.getElementById("name").innerText=student.name
-document.getElementById("sid").innerText="Student ID: "+student.id
-
-document.getElementById("photo").src=
-"https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg"
-
-
-loadCourses()
-
+document.getElementById("name").innerText=student.name;
+document.getElementById("sid").innerText="Student ID: "+student.id;
+document.getElementById("photo").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
 
 async function loadCourses(){
-
-let res=await fetch(API,{
-
-method:"POST",
-
-body:JSON.stringify({
-action:"getAppealCourses",
-id:student.id
-})
-
-})
-
-let courses=await res.json()
-
-let table=document.getElementById("coursesTable")
-
-courses.forEach(c=>{
-
-table.innerHTML+=`
-<tr>
-<td><input type="radio" name="course" value="${c}"></td>
-<td>${c}</td>
-</tr>
-`
-
-})
-
+  let res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getAppealCourses",id:student.id})});
+  let courses=await res.json();
+  let table=document.getElementById("coursesTable");
+  courses.forEach(c=>{
+    table.innerHTML+=`<tr><td><input type="radio" name="course" value="${c}"></td><td>${c}</td></tr>`;
+  });
 }
-
-
+loadCourses();
 
 async function submitAppeal(){
-
-let course=document.querySelector('input[name="course"]:checked')
-
-let reason=document.getElementById("reason").value
-
-if(!course){
-
-alert("Please select course")
-
-return
-
+  let course=document.querySelector('input[name="course"]:checked');
+  let reason=document.getElementById("reason").value;
+  if(!course){ alert("Please select course"); return; }
+  if(reason==""){ alert("Please write reason"); return; }
+  await fetch(API,{method:"POST",body:JSON.stringify({action:"submitAppeal",id:student.id,name:student.name,course:course.value,reason:reason})});
+  alert("Appeal submitted successfully");
+  location.reload();
 }
 
-if(reason==""){
-
-alert("Please write reason")
-
-return
-
-}
-
-
-await fetch(API,{
-
-method:"POST",
-
-body:JSON.stringify({
-
-action:"submitAppeal",
-id:student.id,
-name:student.name,
-course:course.value,
-reason:reason
-
-})
-
-})
-
-alert("Appeal submitted successfully")
-
-location.reload()
-
-}
-
-
-
-function goBack(){
-
-location="index.html"
-
-}
-
-function logout(){
-
-localStorage.clear()
-
-location="index.html"
-
-}
-
+function goBack(){ location="index.html"; }
+function logout(){ localStorage.clear(); location="index.html"; }
 </script>
 
 </body>
-
 </html>
