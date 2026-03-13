@@ -218,13 +218,16 @@ async function downloadPDF(){
       qr.crossOrigin = "Anonymous";
 
       qr.onload = function(){
-        // ضع QR أسفل الجدول مباشرة
-        doc.addImage(qr,"PNG",15,y-10,35,35);
-        doc.setFontSize(10);
-        doc.text("Scan to Verify Result",18,y+30);
+        const qrX = 15;
+        const qrY = y; // أسفل الجدول مباشرة
+        const qrSize = 35;
 
-        // الجملة تحت QR في منتصف الصفحة
-        doc.text("BL = Failed bylaw (Failed in the written Exam)",105,y+70,{align:"center"});
+        doc.addImage(qr,"PNG",qrX, qrY, qrSize, qrSize);
+        doc.setFontSize(10);
+        doc.text("Scan to Verify Result", qrX, qrY + qrSize + 5);
+
+        // الجملة تحت QR
+        doc.text("BL = Failed bylaw (Failed in the written Exam)", 105, qrY + qrSize + 15, {align:"center"});
 
         // حفظ الملف
         doc.save(currentStudent.id+"_UEC_Result.pdf");
