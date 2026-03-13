@@ -38,14 +38,6 @@ footer{ position:fixed; bottom:0; width:100%; text-align:center; background:rgba
     <button onclick="login()">Login</button>
 </div>
 
-<!-- CHANGE PASSWORD -->
-<div class="card" id="changePassBox" style="display:none">
-    <h3>Change Password</h3>
-    <input id="newPass" type="password" placeholder="New Password">
-    <input id="confirmPass" type="password" placeholder="Confirm Password">
-    <button onclick="changePassword()">Update Password</button>
-</div>
-
 <!-- RESULT -->
 <div class="card" id="resultBox" style="display:none">
     <img id="studentPhoto" class="student-photo">
@@ -77,10 +69,8 @@ footer{ position:fixed; bottom:0; width:100%; text-align:center; background:rgba
 </footer>
 
 <script>
-const scriptURL="https://https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"; // ضع هنا رابط Google Apps Script
+const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 let currentStudent=null;
-
-window.onload=function(){ logout(); };
 
 function login(){
     const id=document.getElementById("id").value.trim();
@@ -96,8 +86,6 @@ function login(){
         if(data.status=="error"){ alert(data.message); return; }
 
         currentStudent=data.student;
-
-        // تجهيز paidCourses من بيانات الدفع
         currentStudent.paidCourses = [];
         if(currentStudent.payments && currentStudent.payments.length>0){
             currentStudent.payments.forEach(p=>{
@@ -106,37 +94,15 @@ function login(){
                 }
             });
         }
-
-        // حفظ بيانات الطالب كاملة في sessionStorage
         sessionStorage.setItem("studentData", JSON.stringify(currentStudent));
-
-        if(currentStudent.firstLogin){
-            document.getElementById("loginBox").style.display="none";
-            document.getElementById("changePassBox").style.display="block";
-        }else{
-            showResult();
-        }
+        showResult();
     })
-    .catch(()=>alert("The results are not yet released. Please check back later"));
-}
-
-function changePassword(){
-    const newPass=document.getElementById("newPass").value;
-    const confirmPass=document.getElementById("confirmPass").value;
-    if(newPass!==confirmPass){ alert("Passwords do not match"); return; }
-
-    fetch(scriptURL,{
-        method:"POST",
-        body:new URLSearchParams({ id:currentStudent.id, newPassword:newPass })
-    })
-    .then(res=>res.json())
-    .then(()=>{ alert("Password updated successfully"); showResult(); });
+    .catch(()=>alert("Cannot connect to server. Please try again later."));
 }
 
 function showResult(){
     if(!currentStudent){ logout(); return; }
     document.getElementById("loginBox").style.display="none";
-    document.getElementById("changePassBox").style.display="none";
     document.getElementById("resultBox").style.display="block";
     document.getElementById("footer").style.display="none";
 
@@ -161,7 +127,6 @@ function goToAppeal(){
 function logout(){
     currentStudent=null;
     document.getElementById("resultBox").style.display="none";
-    document.getElementById("changePassBox").style.display="none";
     document.getElementById("loginBox").style.display="block";
     document.getElementById("footer").style.display="block";
     document.getElementById("id").value="";
