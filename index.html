@@ -313,10 +313,23 @@ doc.setFontSize(12);
 
 doc.text("BL = Failed bylaw (Failed in the written Exam)",105,260,{align:"center"});
 
-doc.setFontSize(9);
-doc.setTextColor(0,0,0);
-doc.text("University of East Capital | Cairo – Egypt | www.uec.edu.eg | Hotline: 17523",105,280,{align:"center"});
+// تحديد مكان الخط
+let lineY = 275; // موقع الخط الرأسي، قبل نص الفوتر
 
+// رسم الخط الأفقي
+doc.setDrawColor(0, 0, 0); // لون الخط أسود
+doc.setLineWidth(0.5);      // سمك الخط
+doc.line(20, lineY, 190, lineY); // من x=20 لـ x=190 على نفس الy
+
+// إضافة نص الفوتر
+doc.setFontSize(9);
+doc.setTextColor(0, 0, 0);
+doc.text(
+  "University of East Capital | Cairo – Egypt | www.uec.edu.eg | Hotline: 17523",
+  105,
+  280,
+  { align: "center" }
+);
 
 // =========================
 // SAVE PDF
