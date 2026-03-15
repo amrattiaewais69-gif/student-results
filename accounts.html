@@ -1,98 +1,92 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <meta charset="UTF-8">
 
-<title>UEC Accounts System</title>
+<title>UEC Accounts</title>
 
 <style>
 
 body{
-
 margin:0;
-font-family:Segoe UI;
+font-family:'Segoe UI';
 background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
 color:white;
-
 }
 
 .container{
-
-max-width:900px;
+max-width:1000px;
 margin:auto;
 padding:30px;
+}
 
+.header{
+display:flex;
+align-items:center;
+gap:15px;
+margin-bottom:20px;
+}
+
+.header img{
+height:60px;
 }
 
 .card{
-
 background:rgba(255,255,255,.08);
+backdrop-filter:blur(12px);
 padding:25px;
-border-radius:12px;
-backdrop-filter:blur(10px);
+border-radius:15px;
+box-shadow:0 20px 40px rgba(0,0,0,.4);
 margin-bottom:20px;
-
 }
 
 input,select{
-
 width:100%;
 padding:10px;
 margin-top:10px;
 border:none;
 border-radius:6px;
-
+font-size:15px;
 }
 
 button{
-
 padding:10px 15px;
 border:none;
 border-radius:6px;
 background:#00c6ff;
 color:white;
-margin-top:10px;
 cursor:pointer;
-
+margin-top:10px;
 }
 
 button:hover{
-
 background:#0072ff;
-
-}
-
-table{
-
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
-
-}
-
-td,th{
-
-padding:10px;
-border-bottom:1px solid rgba(255,255,255,.2);
-
 }
 
 .student{
-
 display:flex;
 align-items:center;
-gap:10px;
-
+gap:15px;
+margin-top:10px;
 }
 
 .student img{
-
-width:60px;
-height:60px;
+width:70px;
+height:70px;
 border-radius:50%;
+object-fit:cover;
+}
 
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+
+td,th{
+padding:10px;
+border-bottom:1px solid rgba(255,255,255,.2);
 }
 
 </style>
@@ -103,9 +97,17 @@ border-radius:50%;
 
 <div class="container">
 
+<div class="header">
+
+<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png">
+
+<h2>University of East Capital – Accounts</h2>
+
+</div>
+
 <div class="card" id="loginBox">
 
-<h2>Accounts Login</h2>
+<h3>Accounts Login</h3>
 
 <input id="user" placeholder="Username">
 
@@ -119,15 +121,19 @@ border-radius:50%;
 
 <div class="card">
 
-<h2>Register Appeal Payment</h2>
+<h3>Register Appeal Payment</h3>
 
-<input id="studentId" placeholder="Student ID" onblur="loadStudent()">
+<input id="studentId" placeholder="Student ID" oninput="loadStudent()">
 
 <div class="student">
 
 <img id="photo" style="display:none">
 
+<div>
+
 <div id="studentName"></div>
+
+</div>
 
 </div>
 
@@ -153,7 +159,7 @@ border-radius:50%;
 
 <div class="card">
 
-<h2>Payments</h2>
+<h3>Payments</h3>
 
 <button onclick="exportExcel()">Export Excel</button>
 
@@ -162,13 +168,11 @@ border-radius:50%;
 <thead>
 
 <tr>
-
 <th>ID</th>
 <th>Name</th>
 <th>Course</th>
 <th>Amount</th>
 <th>Date</th>
-
 </tr>
 
 </thead>
@@ -190,17 +194,12 @@ const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5
 async function login(){
 
 const res=await fetch(scriptURL,{
-
 method:"POST",
-
 body:new URLSearchParams({
-
 action:"loginAccount",
 username:user.value,
 password:pass.value
-
 })
-
 });
 
 const data=await res.json();
@@ -212,25 +211,28 @@ panel.style.display="block";
 
 loadPayments();
 
+}else{
+
+alert("Login Failed");
+
 }
 
 }
+
+
 
 async function loadStudent(){
 
 const id=studentId.value;
 
+if(id.length<3)return;
+
 const res=await fetch(scriptURL,{
-
 method:"POST",
-
 body:new URLSearchParams({
-
 action:"getStudent",
 studentId:id
-
 })
-
 });
 
 const data=await res.json();
@@ -243,16 +245,20 @@ photo.src="https://amrattiaewais69-gif.github.io/student-results/photos/"+id+".j
 
 photo.style.display="block";
 
+}else{
+
+studentName.innerText="Student Not Found";
+
 }
 
 }
+
+
 
 async function savePayment(){
 
 const res=await fetch(scriptURL,{
-
 method:"POST",
-
 body:new URLSearchParams({
 
 action:"addPayment",
@@ -262,7 +268,6 @@ course:course.value,
 amount:amount.value
 
 })
-
 });
 
 const data=await res.json();
@@ -273,18 +278,13 @@ loadPayments();
 
 }
 
+
+
 async function loadPayments(){
 
 const res=await fetch(scriptURL,{
-
 method:"POST",
-
-body:new URLSearchParams({
-
-action:"getPayments"
-
-})
-
+body:new URLSearchParams({action:"getPayments"})
 });
 
 const data=await res.json();
@@ -308,6 +308,8 @@ html+=`<tr>
 table.querySelector("tbody").innerHTML=html;
 
 }
+
+
 
 function exportExcel(){
 
