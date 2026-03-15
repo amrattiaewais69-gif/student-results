@@ -7,40 +7,36 @@
 <style>
 *{box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.card{background:#eee;width:450px;border-radius:12px;padding:30px;text-align:center;}
+.card{background:#eee;width:500px;border-radius:12px;padding:30px;text-align:center;}
 .logo{width:90px;margin-bottom:10px;}
-select,input,button{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ccc;font-size:15px;}
-button{background:#345a9d;color:white;border:none;cursor:pointer;}
+input, select{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ccc;}
+button{width:100%;padding:12px;margin-top:10px;background:#345a9d;border:none;color:white;border-radius:6px;cursor:pointer;font-size:15px;}
 button:hover{background:#274a86;}
-.logout{background:#777;margin-top:10px;}
+.studentPhoto{width:120px;height:120px;border-radius:50%;margin:auto;display:block;}
 .footer{margin-top:30px;color:white;font-size:14px;text-align:center;}
 </style>
 </head>
 <body>
 
-<div class="card" id="loginBox">
+<div class="card">
 <img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" class="logo">
-<h2>Accountant Login</h2>
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-</div>
+<h2>Accountant Portal</h2>
 
-<div class="card" id="mainBox" style="display:none">
-<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" class="logo">
-<h2>Record Payment for Appeal</h2>
-
+<label for="studentId">Enter Student ID:</label>
 <input id="studentId" placeholder="Student ID">
-<input id="studentName" placeholder="Student Name">
 
-<label>Select Course:</label>
-<select id="courseSelect"></select>
+<img id="studentPhoto" class="studentPhoto" style="display:none;">
+<input id="studentName" placeholder="Student Name" readonly>
 
-<input id="amount" placeholder="Payment Amount">
+<label for="courseSelect">Select Course for Appeal Payment:</label>
+<select id="courseSelect"><option value="">-- Select Course --</option></select>
 
-<button onclick="submitPayment()">Submit Payment</button>
-<button onclick="downloadCSV()">Export Payments CSV</button>
-<button class="logout" onclick="logout()">Logout</button>
+<label for="amount">Amount Paid:</label>
+<input id="amount" type="number" placeholder="Enter amount">
+
+<button onclick="submitPayment()">Record Payment</button>
+<button onclick="exportPayments()">Export Payments to Excel</button>
+
 </div>
 
 <div class="footer">
@@ -49,46 +45,92 @@ Designed by UEC ICT Department<br>
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"; // ضع هنا رابط السكربت النهائي
+const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-async function login(){
-  const username=document.getElementById("username").value;
-  const password=document.getElementById("password").value;
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"loginAccountant",username,password})});
-  const data=await res.json();
-  if(data.status=="success"){
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("mainBox").style.display="block";
-    loadCourses();
-  } else alert("Invalid username or password");
-}
+// =========================
+// Fetch student info
+// =========================
+async function fetchStudentInfo(){
+  const studentId = document.getElementById("studentId").value.trim();
+  if(!studentId) return;
 
-async function loadCourses(){
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getAllCourses"})});
-  const data=await res.json();
-  const select=document.getElementById("courseSelect");
-  select.innerHTML="";
-  data.courses.forEach(c=>{
-    let opt=document.createElement("option");
-    opt.value=c;
-    opt.text=c;
-    select.add(opt);
+  const res = await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({action:"verifyStudent", id: studentId})
   });
-}
+  const data = await res.json();
+  if(data.status=="success"){
+    document.getElementById("studentName").value = data.student.name;
+    document.getElementById("studentPhoto").src = "https://amrattiaewais69-gif.github.io/student-results/photos/"+studentId+".jpg";
+    document.getElementById("studentPhoto").style.display="block";
 
+    // populate courses dynamically
+    const courseSelect = document.getElementById("courseSelect");
+    courseSelect.innerHTML = '<option value="">-- Select Course --</option>';
+    for(let course in data.student.courses){
+      courseSelect.innerHTML += `<option value="${course}">${course}</option>`;
+    }
+  } else {
+    alert("Student not found!");
+    document.getElementById("studentName").value="";
+    document.getElementById("studentPhoto").style.display="none";
+    document.getElementById("courseSelect").innerHTML = '<option value="">-- Select Course --</option>';
+  }
+}
+document.getElementById("studentId").addEventListener("change", fetchStudentInfo);
+
+// =========================
+// Submit Payment
+// =========================
 async function submitPayment(){
-  const studentId=document.getElementById("studentId").value;
-  const studentName=document.getElementById("studentName").value;
-  const course=document.getElementById("courseSelect").value;
-  const amount=document.getElementById("amount").value;
-  if(!studentId || !studentName || !course || !amount){ alert("Fill all fields"); return; }
-  await fetch(API,{method:"POST",body:JSON.stringify({action:"submitPayment",studentId,studentName,course,amount})});
-  alert("Payment recorded successfully");
+  const studentId = document.getElementById("studentId").value.trim();
+  const studentName = document.getElementById("studentName").value.trim();
+  const course = document.getElementById("courseSelect").value;
+  const amount = document.getElementById("amount").value;
+
+  if(!studentId || !studentName || !course || !amount){
+    alert("Please fill all fields");
+    return;
+  }
+
+  const res = await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({action:"recordPayment", studentId, studentName, course, amount})
+  });
+  const data = await res.json();
+  if(data.status=="success"){
+    alert("Payment recorded successfully!");
+    document.getElementById("amount").value="";
+  } else {
+    alert("Error recording payment");
+  }
 }
 
-function logout(){ location.reload(); }
+// =========================
+// Export payments to Excel
+// =========================
+async function exportPayments(){
+  const res = await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({action:"getAllPayments"})
+  });
+  const data = await res.json();
+  if(!data || data.length==0){ alert("No payments found"); return; }
 
-function downloadCSV(){ window.open(API+"?action=getPaymentsCSV","_blank"); }
+  let csv = "StudentID,StudentName,Course,Amount,Date\n";
+  data.forEach(p=>{
+    const date = p.Date ? new Date(p.Date).toLocaleDateString() : "";
+    csv += `${p.StudentID},${p.StudentName},${p.Course},${p.Amount},${date}\n`;
+  });
+
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "UEC_Payments.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 </script>
 
 </body>
