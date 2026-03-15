@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta charset="UTF-8">
@@ -15,13 +16,13 @@ background:#2f4f88;
 display:flex;
 justify-content:center;
 align-items:center;
-height:100vh;
+min-height:100vh;
 }
 
 .card{
 
 background:#f2f2f2;
-width:500px;
+width:520px;
 padding:35px;
 border-radius:12px;
 text-align:center;
@@ -33,14 +34,10 @@ width:90px;
 margin-bottom:10px;
 }
 
-h2{
-margin-top:10px;
-}
-
 input,select{
 
 width:100%;
-padding:10px;
+padding:12px;
 margin-top:12px;
 border-radius:6px;
 border:1px solid #ccc;
@@ -85,13 +82,22 @@ table{
 width:100%;
 margin-top:20px;
 border-collapse:collapse;
+font-size:15px;
 
 }
 
-td,th{
+th{
 
-padding:8px;
-border:1px solid #ccc;
+background:#355a9b;
+color:white;
+padding:12px;
+
+}
+
+td{
+
+padding:14px;
+border-bottom:1px solid #ddd;
 
 }
 
@@ -103,7 +109,8 @@ border:1px solid #ccc;
 
 <div class="card">
 
-<img class="logo" src="https://amrattiaewais69-gif.github.io/student-results/logo.png">
+<img class="logo"
+src="https://amrattiaewais69-gif.github.io/student-results/logo.png">
 
 <h2>University of East Capital</h2>
 
@@ -112,6 +119,7 @@ border:1px solid #ccc;
 <div id="loginBox">
 
 <input id="username" placeholder="Username">
+
 <input id="password" type="password" placeholder="Password">
 
 <button onclick="login()">Login</button>
@@ -119,9 +127,13 @@ border:1px solid #ccc;
 </div>
 
 
+
 <div id="panel" style="display:none">
 
-<input id="studentId" placeholder="Student ID" onkeyup="loadStudent()">
+<input id="studentId"
+placeholder="Student ID"
+onkeyup="loadStudent()">
+
 
 <div class="student">
 
@@ -130,6 +142,7 @@ border:1px solid #ccc;
 <h3 id="studentName"></h3>
 
 </div>
+
 
 <select id="course">
 
@@ -145,20 +158,24 @@ border:1px solid #ccc;
 
 </select>
 
+
 <input id="amount" placeholder="Amount">
 
 <button onclick="savePayment()">Save Payment</button>
+
 
 <table id="paymentsTable">
 
 <thead>
 
 <tr>
+
 <th>ID</th>
 <th>Name</th>
 <th>Course</th>
 <th>Amount</th>
 <th>Date</th>
+
 </tr>
 
 </thead>
@@ -208,7 +225,7 @@ alert("Login Failed");
 
 async function loadStudent(){
 
-const id = studentId.value;
+const id = studentId.value.trim();
 
 if(id.length<5) return;
 
@@ -226,12 +243,15 @@ if(data.success){
 
 studentName.innerText = data.name;
 
-photo.src = "https://amrattiaewais69-gif.github.io/student-results/photos/"+id+".jpg";
+photo.src =
+"https://amrattiaewais69-gif.github.io/student-results/photos/"+data.photo+".jpg";
+
 photo.style.display="block";
 
 }else{
 
 studentName.innerText="Student Not Found";
+photo.style.display="none";
 
 }
 
@@ -268,7 +288,9 @@ async function loadPayments(){
 
 const res = await fetch(scriptURL,{
 method:"POST",
-body:new URLSearchParams({action:"getPayments"})
+body:new URLSearchParams({
+action:"getPayments"
+})
 });
 
 const data = await res.json();
