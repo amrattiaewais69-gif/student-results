@@ -11,82 +11,88 @@
 body{
 margin:0;
 font-family:'Segoe UI';
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
-}
-
-.container{
-max-width:1000px;
-margin:auto;
-padding:30px;
-}
-
-.header{
+background:#2f4f88;
 display:flex;
+justify-content:center;
 align-items:center;
-gap:15px;
-margin-bottom:20px;
-}
-
-.header img{
-height:60px;
+height:100vh;
 }
 
 .card{
-background:rgba(255,255,255,.08);
-backdrop-filter:blur(12px);
-padding:25px;
-border-radius:15px;
-box-shadow:0 20px 40px rgba(0,0,0,.4);
-margin-bottom:20px;
+
+background:#f2f2f2;
+width:500px;
+padding:35px;
+border-radius:12px;
+text-align:center;
+
+}
+
+.logo{
+width:90px;
+margin-bottom:10px;
+}
+
+h2{
+margin-top:10px;
 }
 
 input,select{
+
 width:100%;
 padding:10px;
-margin-top:10px;
-border:none;
+margin-top:12px;
 border-radius:6px;
+border:1px solid #ccc;
 font-size:15px;
+
 }
 
 button{
-padding:10px 15px;
+
+width:100%;
+padding:12px;
+margin-top:15px;
 border:none;
 border-radius:6px;
-background:#00c6ff;
+background:#355a9b;
 color:white;
+font-size:16px;
 cursor:pointer;
-margin-top:10px;
+
 }
 
 button:hover{
-background:#0072ff;
+background:#27497f;
 }
 
 .student{
-display:flex;
-align-items:center;
-gap:15px;
-margin-top:10px;
+
+margin-top:15px;
+
 }
 
 .student img{
-width:70px;
-height:70px;
+
+width:90px;
+height:90px;
 border-radius:50%;
-object-fit:cover;
+
 }
 
 table{
+
 width:100%;
+margin-top:20px;
 border-collapse:collapse;
-margin-top:15px;
+
 }
 
 td,th{
-padding:10px;
-border-bottom:1px solid rgba(255,255,255,.2);
+
+padding:8px;
+border:1px solid #ccc;
+
 }
 
 </style>
@@ -95,45 +101,33 @@ border-bottom:1px solid rgba(255,255,255,.2);
 
 <body>
 
-<div class="container">
+<div class="card">
 
-<div class="header">
+<img class="logo" src="https://amrattiaewais69-gif.github.io/student-results/logo.png">
 
-<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png">
+<h2>University of East Capital</h2>
 
-<h2>University of East Capital – Accounts</h2>
+<h3>Accounts System</h3>
 
-</div>
+<div id="loginBox">
 
-<div class="card" id="loginBox">
-
-<h3>Accounts Login</h3>
-
-<input id="user" placeholder="Username">
-
-<input id="pass" type="password" placeholder="Password">
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
 
 <button onclick="login()">Login</button>
 
 </div>
 
+
 <div id="panel" style="display:none">
 
-<div class="card">
-
-<h3>Register Appeal Payment</h3>
-
-<input id="studentId" placeholder="Student ID" oninput="loadStudent()">
+<input id="studentId" placeholder="Student ID" onkeyup="loadStudent()">
 
 <div class="student">
 
 <img id="photo" style="display:none">
 
-<div>
-
-<div id="studentName"></div>
-
-</div>
+<h3 id="studentName"></h3>
 
 </div>
 
@@ -155,15 +149,7 @@ border-bottom:1px solid rgba(255,255,255,.2);
 
 <button onclick="savePayment()">Save Payment</button>
 
-</div>
-
-<div class="card">
-
-<h3>Payments</h3>
-
-<button onclick="exportExcel()">Export Excel</button>
-
-<table id="table">
+<table id="paymentsTable">
 
 <thead>
 
@@ -185,7 +171,6 @@ border-bottom:1px solid rgba(255,255,255,.2);
 
 </div>
 
-</div>
 
 <script>
 
@@ -193,16 +178,16 @@ const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5
 
 async function login(){
 
-const res=await fetch(scriptURL,{
+const res = await fetch(scriptURL,{
 method:"POST",
 body:new URLSearchParams({
-action:"loginAccount",
-username:user.value,
-password:pass.value
+action:"accountLogin",
+username:username.value,
+password:password.value
 })
 });
 
-const data=await res.json();
+const data = await res.json();
 
 if(data.success){
 
@@ -223,26 +208,25 @@ alert("Login Failed");
 
 async function loadStudent(){
 
-const id=studentId.value;
+const id = studentId.value;
 
-if(id.length<3)return;
+if(id.length<5) return;
 
-const res=await fetch(scriptURL,{
+const res = await fetch(scriptURL,{
 method:"POST",
 body:new URLSearchParams({
-action:"getStudent",
+action:"getStudentData",
 studentId:id
 })
 });
 
-const data=await res.json();
+const data = await res.json();
 
 if(data.success){
 
-studentName.innerText=data.name;
+studentName.innerText = data.name;
 
-photo.src="https://amrattiaewais69-gif.github.io/student-results/photos/"+id+".jpg";
-
+photo.src = "https://amrattiaewais69-gif.github.io/student-results/photos/"+id+".jpg";
 photo.style.display="block";
 
 }else{
@@ -257,11 +241,11 @@ studentName.innerText="Student Not Found";
 
 async function savePayment(){
 
-const res=await fetch(scriptURL,{
+const res = await fetch(scriptURL,{
 method:"POST",
 body:new URLSearchParams({
 
-action:"addPayment",
+action:"savePayment",
 studentId:studentId.value,
 studentName:studentName.innerText,
 course:course.value,
@@ -270,7 +254,7 @@ amount:amount.value
 })
 });
 
-const data=await res.json();
+const data = await res.json();
 
 alert(data.success?"Saved":"Course already registered");
 
@@ -282,12 +266,12 @@ loadPayments();
 
 async function loadPayments(){
 
-const res=await fetch(scriptURL,{
+const res = await fetch(scriptURL,{
 method:"POST",
 body:new URLSearchParams({action:"getPayments"})
 });
 
-const data=await res.json();
+const data = await res.json();
 
 let html="";
 
@@ -305,27 +289,12 @@ html+=`<tr>
 
 });
 
-table.querySelector("tbody").innerHTML=html;
-
-}
-
-
-
-function exportExcel(){
-
-let table=document.getElementById("table").outerHTML;
-
-let a=document.createElement("a");
-
-a.href='data:application/vnd.ms-excel,'+encodeURIComponent(table);
-
-a.download="payments.xls";
-
-a.click();
+paymentsTable.querySelector("tbody").innerHTML=html;
 
 }
 
 </script>
 
 </body>
+
 </html>
