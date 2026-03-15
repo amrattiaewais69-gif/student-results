@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>UEC Control Panel Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.card{background:#eee;width:400px;border-radius:12px;padding:30px;text-align:center;}
+.logo{width:90px;margin-bottom:10px;}
+input{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ccc;}
+button{width:100%;padding:12px;margin-top:10px;background:#345a9d;border:none;color:white;border-radius:6px;cursor:pointer;font-size:15px;}
+button:hover{background:#274a86;}
+.footer{margin-top:30px;color:white;font-size:14px;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="card" id="loginBox">
+<img src="logo.png" class="logo">
+<h2>Control Panel Login</h2>
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+
+<div class="card" id="controlPanel" style="display:none">
+<h2>Control Panel</h2>
+<div id="appealsSection">
+<table id="appealsTable">
+<tr>
+<th>Student Name</th>
+<th>Course</th>
+<th>Reason</th>
+<th>Date</th>
+<th>Status</th>
+<th>Update</th>
+</tr>
+</table>
+</div>
+<button onclick="logout()">Logout</button>
+</div>
+
+<div class="footer">
+Designed by UEC ICT Department<br>© 2026 University of East Capital
+</div>
+
+<script>
+const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+
+async function login(){
+  const username=document.getElementById("username").value;
+  const password=document.getElementById("password").value;
+
+  if(username=="" || password==""){ alert("Enter username and password"); return; }
+
+  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"controlLogin",username,password})});
+  const data=await res.json();
+
+  if(data.status==="success"){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("controlPanel").style.display="block";
+    loadAppeals();
+  }else{
+    alert(data.message);
+  }
+}
+
+async function loadAppeals(){
+  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getAllPendingAppealsForControl"})});
+  const data=await res.json();
+  const table=document.getElementById("appealsTable");
+  table.innerHTML=`<tr>
+    <th>Student Name</th>
+    <th>Course</th>
+    <th>Reason</th>
+    <th>Date</th>
+    <th>Status</th>
+    <th>Update</th>
+  </tr>`;
+  
+  data.forEach(a=>{
+    const row=document.createElement("tr");
+    row.innerHTML=`
+      <td>${a.studentName}</td>
+      <td>${a.course}</td>
+      <td>${a.reason}</td>
+      <td>${new Date(a.date).toLocaleDateString()}</td>
+      <td>
+        <select id="status_${a.studentId}_${a.course}">
+          <option value="Pending" ${a.status==="Pending"?"selected":""}>Pending</option>
+          <option value="Under Review">Under Review</option>
+          <option value="Accepted">Accepted</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </td>
+      <td><button onclick="updateStatus('${a.studentId}','${a.course}')">Save</button></td>
+    `;
+    table.appendChild(row);
+  });
+}
+
+async function updateStatus(studentId, course){
+  const sel=document.getElementById(`status_${studentId}_${course}`);
+  const status=sel.value;
+
+  const res=await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({action:"updateAppealStatus",studentId,course,status})
+  });
+
+  const data=await res.json();
+  if(data.status==="success"){
+    alert("Status updated successfully");
+    loadAppeals();
+  }else{
+    alert("Error: "+data.message);
+  }
+}
+
+function logout(){
+  document.getElementById("controlPanel").style.display="none";
+  document.getElementById("loginBox").style.display="block";
+}
+</script>
+
+</body>
+</html>
