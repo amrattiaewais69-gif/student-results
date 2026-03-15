@@ -1,322 +1,150 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
 <meta charset="UTF-8">
-
-<title>UEC Accounts</title>
-
+<title>UEC Accountant Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-
-body{
-margin:0;
-font-family:'Segoe UI';
-background:#2f4f88;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-}
-
-.card{
-
-background:#f2f2f2;
-width:520px;
-padding:35px;
-border-radius:12px;
-text-align:center;
-
-}
-
-.logo{
-width:90px;
-margin-bottom:10px;
-}
-
-input,select{
-
-width:100%;
-padding:12px;
-margin-top:12px;
-border-radius:6px;
-border:1px solid #ccc;
-font-size:15px;
-
-}
-
-button{
-
-width:100%;
-padding:12px;
-margin-top:15px;
-border:none;
-border-radius:6px;
-background:#355a9b;
-color:white;
-font-size:16px;
-cursor:pointer;
-
-}
-
-button:hover{
-background:#27497f;
-}
-
-.student{
-
-margin-top:15px;
-
-}
-
-.student img{
-
-width:90px;
-height:90px;
-border-radius:50%;
-
-}
-
-table{
-
-width:100%;
-margin-top:20px;
-border-collapse:collapse;
-font-size:15px;
-
-}
-
-th{
-
-background:#355a9b;
-color:white;
-padding:12px;
-
-}
-
-td{
-
-padding:14px;
-border-bottom:1px solid #ddd;
-
-}
-
+*{box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.card{background:#eee;width:450px;border-radius:12px;padding:30px;text-align:center;}
+.logo{width:90px;margin-bottom:10px;}
+input,select{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ccc;}
+button{width:100%;padding:12px;margin-top:10px;background:#345a9d;border:none;color:white;border-radius:6px;cursor:pointer;font-size:15px;}
+button:hover{background:#274a86;}
+.logout{background:#777;}
+.studentPhoto{width:120px;height:120px;border-radius:50%;margin:auto;display:block;}
 </style>
-
 </head>
-
 <body>
 
-<div class="card">
-
-<img class="logo"
-src="https://amrattiaewais69-gif.github.io/student-results/logo.png">
-
-<h2>University of East Capital</h2>
-
-<h3>Accounts System</h3>
-
-<div id="loginBox">
-
+<div class="card" id="loginBox">
+<img src="logo.png" class="logo">
+<h2>Accountant Login</h2>
 <input id="username" placeholder="Username">
-
 <input id="password" type="password" placeholder="Password">
-
 <button onclick="login()">Login</button>
-
 </div>
 
+<div class="card" id="accountBox" style="display:none;">
+<img src="logo.png" class="logo">
+<h2>Record Student Payment</h2>
 
+<label>Student ID:</label>
+<input id="studentId" placeholder="Enter Student ID">
 
-<div id="panel" style="display:none">
+<button onclick="loadStudent()">Load Student Info</button>
 
-<input id="studentId"
-placeholder="Student ID"
-onkeyup="loadStudent()">
+<img id="photo" class="studentPhoto" style="display:none;">
+<h3 id="name"></h3>
+<p id="sid"></p>
 
+<label>Select Course:</label>
+<select id="courseSelect"></select>
 
-<div class="student">
-
-<img id="photo" style="display:none">
-
-<h3 id="studentName"></h3>
-
-</div>
-
-
-<select id="course">
-
-<option value="">Select Course</option>
-
-<option>Normal Human Structure</option>
-<option>Body Function & Biochemistry</option>
-<option>Molecular Biology & Genetics</option>
-<option>Biomedical Research & Statistics</option>
-<option>Human Behaviour & Psychology</option>
-<option>Learning & Thinking Skills</option>
-<option>Critical Thinking</option>
-
-</select>
-
-
-<input id="amount" placeholder="Amount">
+<label>Payment Amount:</label>
+<input id="amount" placeholder="Enter Amount">
 
 <button onclick="savePayment()">Save Payment</button>
-
-
-<table id="paymentsTable">
-
-<thead>
-
-<tr>
-
-<th>ID</th>
-<th>Name</th>
-<th>Course</th>
-<th>Amount</th>
-<th>Date</th>
-
-</tr>
-
-</thead>
-
-<tbody></tbody>
-
-</table>
-
+<button class="logout" onclick="logout()">Logout</button>
 </div>
-
-</div>
-
 
 <script>
+const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"; // استبدل بالرابط الخاص بك
+let currentStudent=null;
+let loggedIn=false;
 
-const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+// Dummy username/password for accountant
+const ACCOUNT_USERNAME = "accountant";
+const ACCOUNT_PASSWORD = "uec2026";
 
-async function login(){
-
-const res = await fetch(scriptURL,{
-method:"POST",
-body:new URLSearchParams({
-action:"accountLogin",
-username:username.value,
-password:password.value
-})
-});
-
-const data = await res.json();
-
-if(data.success){
-
-loginBox.style.display="none";
-panel.style.display="block";
-
-loadPayments();
-
-}else{
-
-alert("Login Failed");
-
+function login(){
+  const user=document.getElementById("username").value.trim();
+  const pass=document.getElementById("password").value.trim();
+  if(user===ACCOUNT_USERNAME && pass===ACCOUNT_PASSWORD){
+    loggedIn=true;
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("accountBox").style.display="block";
+  }else{
+    alert("Invalid username or password");
+  }
 }
-
-}
-
-
 
 async function loadStudent(){
-
-const id = studentId.value.trim();
-
-if(id.length<5) return;
-
-const res = await fetch(scriptURL,{
-method:"POST",
-body:new URLSearchParams({
-action:"getStudentData",
-studentId:id
-})
-});
-
-const data = await res.json();
-
-if(data.success){
-
-studentName.innerText = data.name;
-
-photo.src =
-"https://amrattiaewais69-gif.github.io/student-results/photos/"+data.photo+".jpg";
-
-photo.style.display="block";
-
-}else{
-
-studentName.innerText="Student Not Found";
-photo.style.display="none";
-
+  const id=document.getElementById("studentId").value.trim();
+  if(id===""){ alert("Enter Student ID"); return; }
+  
+  try{
+    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"verifyStudent",id:id})});
+    const data=await res.json();
+    if(data.status==="success"){
+      currentStudent=data.student;
+      document.getElementById("photo").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
+      document.getElementById("photo").style.display="block";
+      document.getElementById("name").innerText=currentStudent.name;
+      document.getElementById("sid").innerText="Student ID: "+currentStudent.id;
+      loadCourses();
+    }else{
+      alert("Student not found");
+    }
+  }catch(e){
+    alert("Error connecting to server");
+  }
 }
 
+async function loadCourses(){
+  try{
+    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getResultHeaders"})});
+    const data=await res.json();
+    const select=document.getElementById("courseSelect");
+    select.innerHTML="";
+    data.headers.forEach(c=>{
+      const option=document.createElement("option");
+      option.value=c;
+      option.text=c;
+      select.add(option);
+    });
+  }catch(e){
+    alert("Error loading courses");
+  }
 }
-
-
 
 async function savePayment(){
-
-const res = await fetch(scriptURL,{
-method:"POST",
-body:new URLSearchParams({
-
-action:"savePayment",
-studentId:studentId.value,
-studentName:studentName.innerText,
-course:course.value,
-amount:amount.value
-
-})
-});
-
-const data = await res.json();
-
-alert(data.success?"Saved":"Course already registered");
-
-loadPayments();
-
+  const course=document.getElementById("courseSelect").value;
+  const amount=document.getElementById("amount").value.trim();
+  if(!currentStudent){ alert("Load a student first"); return; }
+  if(amount===""){ alert("Enter amount"); return; }
+  try{
+    const res=await fetch(API,{method:"POST",body:JSON.stringify({
+      action:"savePayment",
+      studentId:currentStudent.id,
+      course:course,
+      amount:amount
+    })});
+    const data=await res.json();
+    if(data.status==="success"){
+      alert("Payment saved successfully");
+      document.getElementById("amount").value="";
+    }else{
+      alert("Error: "+data.message);
+    }
+  }catch(e){
+    alert("Error connecting to server");
+  }
 }
 
-
-
-async function loadPayments(){
-
-const res = await fetch(scriptURL,{
-method:"POST",
-body:new URLSearchParams({
-action:"getPayments"
-})
-});
-
-const data = await res.json();
-
-let html="";
-
-data.payments.forEach(p=>{
-
-html+=`<tr>
-
-<td>${p[0]}</td>
-<td>${p[1]}</td>
-<td>${p[2]}</td>
-<td>${p[3]}</td>
-<td>${p[4]}</td>
-
-</tr>`;
-
-});
-
-paymentsTable.querySelector("tbody").innerHTML=html;
-
+function logout(){
+  loggedIn=false;
+  currentStudent=null;
+  document.getElementById("loginBox").style.display="block";
+  document.getElementById("accountBox").style.display="none";
+  document.getElementById("studentId").value="";
+  document.getElementById("photo").style.display="none";
+  document.getElementById("name").innerText="";
+  document.getElementById("sid").innerText="";
+  document.getElementById("amount").value="";
 }
-
 </script>
 
 </body>
-
 </html>
