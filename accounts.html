@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>UEC Accounts System</title>
+
+<style>
+
+body{
+
+margin:0;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+
+}
+
+.container{
+
+max-width:900px;
+margin:auto;
+padding:30px;
+
+}
+
+.card{
+
+background:rgba(255,255,255,.08);
+padding:25px;
+border-radius:12px;
+backdrop-filter:blur(10px);
+margin-bottom:20px;
+
+}
+
+input,select{
+
+width:100%;
+padding:10px;
+margin-top:10px;
+border:none;
+border-radius:6px;
+
+}
+
+button{
+
+padding:10px 15px;
+border:none;
+border-radius:6px;
+background:#00c6ff;
+color:white;
+margin-top:10px;
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:#0072ff;
+
+}
+
+table{
+
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+
+}
+
+td,th{
+
+padding:10px;
+border-bottom:1px solid rgba(255,255,255,.2);
+
+}
+
+.student{
+
+display:flex;
+align-items:center;
+gap:10px;
+
+}
+
+.student img{
+
+width:60px;
+height:60px;
+border-radius:50%;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card" id="loginBox">
+
+<h2>Accounts Login</h2>
+
+<input id="user" placeholder="Username">
+
+<input id="pass" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+</div>
+
+<div id="panel" style="display:none">
+
+<div class="card">
+
+<h2>Register Appeal Payment</h2>
+
+<input id="studentId" placeholder="Student ID" onblur="loadStudent()">
+
+<div class="student">
+
+<img id="photo" style="display:none">
+
+<div id="studentName"></div>
+
+</div>
+
+<select id="course">
+
+<option value="">Select Course</option>
+
+<option>Normal Human Structure</option>
+<option>Body Function & Biochemistry</option>
+<option>Molecular Biology & Genetics</option>
+<option>Biomedical Research & Statistics</option>
+<option>Human Behaviour & Psychology</option>
+<option>Learning & Thinking Skills</option>
+<option>Critical Thinking</option>
+
+</select>
+
+<input id="amount" placeholder="Amount">
+
+<button onclick="savePayment()">Save Payment</button>
+
+</div>
+
+<div class="card">
+
+<h2>Payments</h2>
+
+<button onclick="exportExcel()">Export Excel</button>
+
+<table id="table">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>Name</th>
+<th>Course</th>
+<th>Amount</th>
+<th>Date</th>
+
+</tr>
+
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const scriptURL="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+
+async function login(){
+
+const res=await fetch(scriptURL,{
+
+method:"POST",
+
+body:new URLSearchParams({
+
+action:"loginAccount",
+username:user.value,
+password:pass.value
+
+})
+
+});
+
+const data=await res.json();
+
+if(data.success){
+
+loginBox.style.display="none";
+panel.style.display="block";
+
+loadPayments();
+
+}
+
+}
+
+async function loadStudent(){
+
+const id=studentId.value;
+
+const res=await fetch(scriptURL,{
+
+method:"POST",
+
+body:new URLSearchParams({
+
+action:"getStudent",
+studentId:id
+
+})
+
+});
+
+const data=await res.json();
+
+if(data.success){
+
+studentName.innerText=data.name;
+
+photo.src="https://amrattiaewais69-gif.github.io/student-results/photos/"+id+".jpg";
+
+photo.style.display="block";
+
+}
+
+}
+
+async function savePayment(){
+
+const res=await fetch(scriptURL,{
+
+method:"POST",
+
+body:new URLSearchParams({
+
+action:"addPayment",
+studentId:studentId.value,
+studentName:studentName.innerText,
+course:course.value,
+amount:amount.value
+
+})
+
+});
+
+const data=await res.json();
+
+alert(data.success?"Saved":"Course already registered");
+
+loadPayments();
+
+}
+
+async function loadPayments(){
+
+const res=await fetch(scriptURL,{
+
+method:"POST",
+
+body:new URLSearchParams({
+
+action:"getPayments"
+
+})
+
+});
+
+const data=await res.json();
+
+let html="";
+
+data.payments.forEach(p=>{
+
+html+=`<tr>
+
+<td>${p[0]}</td>
+<td>${p[1]}</td>
+<td>${p[2]}</td>
+<td>${p[3]}</td>
+<td>${p[4]}</td>
+
+</tr>`;
+
+});
+
+table.querySelector("tbody").innerHTML=html;
+
+}
+
+function exportExcel(){
+
+let table=document.getElementById("table").outerHTML;
+
+let a=document.createElement("a");
+
+a.href='data:application/vnd.ms-excel,'+encodeURIComponent(table);
+
+a.download="payments.xls";
+
+a.click();
+
+}
+
+</script>
+
+</body>
+</html>
