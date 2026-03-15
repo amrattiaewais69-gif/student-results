@@ -32,7 +32,6 @@ button:hover{background:#274a86;}
 
 <label>Student ID:</label>
 <input id="studentId" placeholder="Enter Student ID">
-
 <button onclick="loadStudent()">Load Student Info</button>
 
 <img id="photo" class="studentPhoto" style="display:none;">
@@ -46,22 +45,21 @@ button:hover{background:#274a86;}
 <input id="amount" placeholder="Enter Amount">
 
 <button onclick="savePayment()">Save Payment</button>
+<button onclick="exportPayments()">Export Payments</button>
 <button class="logout" onclick="logout()">Logout</button>
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"; // استبدل بالرابط الخاص بك
+const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec"; // ضع هنا رابط Web App
 let currentStudent=null;
 let loggedIn=false;
 
-// Dummy username/password for accountant
-const ACCOUNT_USERNAME = "accountant";
-const ACCOUNT_PASSWORD = "uec2026";
-
-function login(){
+async function login(){
   const user=document.getElementById("username").value.trim();
   const pass=document.getElementById("password").value.trim();
-  if(user===ACCOUNT_USERNAME && pass===ACCOUNT_PASSWORD){
+  const res = await fetch(API,{method:"POST",body:JSON.stringify({action:"verifyAccount",username:user,password:pass})});
+  const data = await res.json();
+  if(data.status==="success"){
     loggedIn=true;
     document.getElementById("loginBox").style.display="none";
     document.getElementById("accountBox").style.display="block";
@@ -73,7 +71,6 @@ function login(){
 async function loadStudent(){
   const id=document.getElementById("studentId").value.trim();
   if(id===""){ alert("Enter Student ID"); return; }
-  
   try{
     const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"verifyStudent",id:id})});
     const data=await res.json();
@@ -118,6 +115,7 @@ async function savePayment(){
     const res=await fetch(API,{method:"POST",body:JSON.stringify({
       action:"savePayment",
       studentId:currentStudent.id,
+      studentName:currentStudent.name,
       course:course,
       amount:amount
     })});
@@ -133,6 +131,22 @@ async function savePayment(){
   }
 }
 
+async function exportPayments(){
+  try{
+    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getPaymentsCSV"})});
+    const data=await res.json();
+    if(data.status==="success"){
+      const blob = new Blob([data.csv], { type: 'text/csv' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "UEC_Payments.csv";
+      link.click();
+    }
+  }catch(e){
+    alert("Error exporting payments");
+  }
+}
+
 function logout(){
   loggedIn=false;
   currentStudent=null;
@@ -145,6 +159,5 @@ function logout(){
   document.getElementById("amount").value="";
 }
 </script>
-
 </body>
 </html>
