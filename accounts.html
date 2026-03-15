@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box;font-family:'Poppins',sans-serif;}
+*{box-sizing:border-box;font-family:'Poppins',sans-serif}
 
 body{
 margin:0;
@@ -52,7 +51,9 @@ cursor:pointer;
 font-size:15px;
 }
 
-button:hover{background:#274a86;}
+button:hover{
+background:#274a86;
+}
 
 .studentPhoto{
 width:120px;
@@ -124,7 +125,6 @@ UEC ICT Department<br>
 </div>
 
 
-
 <script>
 
 const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
@@ -132,7 +132,8 @@ const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW
 let currentStudent=null;
 
 
-// LOGIN ACCOUNTANT
+
+// ================= LOGIN =================
 
 async function login(){
 
@@ -165,7 +166,7 @@ alert("Invalid username or password");
 
 
 
-// LOAD STUDENT
+// ================= LOAD STUDENT =================
 
 async function loadStudent(){
 
@@ -196,7 +197,21 @@ const photo=document.getElementById("photo");
 photo.src="https://amrattiaewais69-gif.github.io/student-results/photos/"+currentStudent.id+".jpg";
 photo.style.display="block";
 
-loadCourses();
+
+/* تحميل المواد */
+
+const select=document.getElementById("courseSelect");
+select.innerHTML="";
+
+for(let course in currentStudent.courses){
+
+let option=document.createElement("option");
+option.value=course;
+option.text=course;
+
+select.appendChild(option);
+
+}
 
 }else{
 
@@ -208,36 +223,7 @@ alert("Student not found");
 
 
 
-// LOAD COURSES
-
-async function loadCourses(){
-
-const res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({
-action:"getResultHeaders"
-})
-});
-
-const data=await res.json();
-
-const select=document.getElementById("courseSelect");
-select.innerHTML="";
-
-data.headers.forEach(c=>{
-
-let option=document.createElement("option");
-option.value=c;
-option.text=c;
-select.appendChild(option);
-
-});
-
-}
-
-
-
-// SAVE PAYMENT
+// ================= SAVE PAYMENT =================
 
 async function savePayment(){
 
@@ -278,24 +264,17 @@ alert("Error saving payment");
 
 
 
-// EXPORT EXCEL
+// ================= EXPORT EXCEL =================
 
-async function exportPayments(){
+function exportPayments(){
 
-const res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({
-action:"getPaymentsCSV"
-})
-});
+const sheetID="14IW4oA1wo_-PyUXQMQdIEwoLcTu1nB4Yfz2PnGZeATM";
 
-const data=await res.json();
-
-const blob=new Blob([data.csv],{type:'text/csv'});
+const url=`https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=Payments`;
 
 const link=document.createElement("a");
 
-link.href=URL.createObjectURL(blob);
+link.href=url;
 
 link.download="UEC_Payments.csv";
 
@@ -305,7 +284,7 @@ link.click();
 
 
 
-// LOGOUT
+// ================= LOGOUT =================
 
 function logout(){
 
@@ -317,4 +296,3 @@ location.reload();
 
 </body>
 </html>
-```
