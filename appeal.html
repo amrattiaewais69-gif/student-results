@@ -53,13 +53,13 @@ Designed by UEC ICT Department<br>
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+const API="https://script.google.com/macros/s/AKfycbzQEhrvSLTdOMKXuH_H8gS3vXUKK4jgl4jjLL2KAkWNbFGe8bsF2ggcLiT3TWnkMX7bew/exec";
 let student=JSON.parse(localStorage.getItem("student"));
 if(!student){ location="index.html"; }
 
 document.getElementById("name").innerText=student.name;
 document.getElementById("sid").innerText="Student ID: "+student.id;
-document.getElementById("photo").src="https://amrattiaewais69-gif.github.io/student-results/photos/"+student.id+".jpg";
+document.getElementById("photo").src="https://amrattiaewais69-gif.github.io/student-final-result/photos/"+student.id+".jpg";
 
 // Load Courses with Deadline Check
 async function loadCourses(){
