@@ -137,33 +137,28 @@ let currentStudent=null;
 
 async function login(){
 
-const username=document.getElementById("username").value.trim();
-const password=document.getElementById("password").value.trim();
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
 
-const res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({
-action:"verifyAccount",
-username:username,
-password:password
-})
-});
+  const res = await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"accountantLogin",
+      username:username,
+      password:password
+    })
+  });
 
-const data=await res.json();
+  const data = await res.json();
 
-if(data.status==="success"){
-
-document.getElementById("loginBox").style.display="none";
-document.getElementById("mainBox").style.display="block";
-
-}else{
-
-alert("Invalid username or password");
+  if(data.status === "success"){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("panel").style.display="block";
+  }else{
+    alert("Invalid username or password");
+  }
 
 }
-
-}
-
 
 
 // ================= LOAD STUDENT =================
