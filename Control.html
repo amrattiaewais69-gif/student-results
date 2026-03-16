@@ -16,7 +16,6 @@ align-items:center;
 justify-content:center;
 flex-direction:column;
 }
-
 .card{
 background:#eee;
 border-radius:12px;
@@ -24,12 +23,10 @@ padding:30px;
 text-align:center;
 margin:15px;
 }
-
 .logo{
 width:80px;
 margin-bottom:10px;
 }
-
 input,select{
 width:100%;
 padding:10px;
@@ -37,7 +34,6 @@ margin:5px 0;
 border-radius:6px;
 border:1px solid #ccc;
 }
-
 button{
 width:100%;
 padding:12px;
@@ -49,38 +45,34 @@ border-radius:6px;
 cursor:pointer;
 font-size:15px;
 }
-
 button:hover{
 background:#274a86;
 }
-
 .footer{
 margin-top:20px;
 color:white;
 font-size:14px;
 text-align:center;
 }
-
 table{
 width:100%;
 border-collapse:collapse;
 margin-top:15px;
 font-size:14px;
+table-layout:auto;
 }
-
 table th, table td{
 border:1px solid #999;
 padding:8px;
 text-align:center;
+word-break:break-word;
 }
-
 .dashboard{
 display:flex;
 justify-content:space-around;
 flex-wrap:wrap;
 margin-bottom:15px;
 }
-
 .dashboard div{
 background:#345a9d;
 color:white;
@@ -89,10 +81,8 @@ border-radius:8px;
 flex:1 1 120px;
 margin:5px;
 }
-
 .searchBox{
 margin:10px 0;
-overflow-x:auto;
 }
 </style>
 </head>
@@ -133,7 +123,6 @@ overflow-x:auto;
 <button onclick="searchStudent()">Search</button>
 </div>
 
-<div style="overflow-x:auto;">
 <table id="appealsTable">
 <thead>
 <tr>
@@ -147,7 +136,6 @@ overflow-x:auto;
 </thead>
 <tbody></tbody>
 </table>
-</div>
 
 <button onclick="exportExcel()">Export Appeals Excel</button>
 <button onclick="logout()">Logout</button>
@@ -165,16 +153,14 @@ let allAppeals=[];
 
 // ================= LOGIN =================
 async function login(){
-const username=document.getElementById("username").value;
-const password=document.getElementById("password").value;
+const username=document.getElementById("username").value.trim();
+const password=document.getElementById("password").value.trim();
 
 const res=await fetch(API,{
 method:"POST",
-body:JSON.stringify({action:"controlLogin", username, password})
+body:JSON.stringify({action:"controlLogin",username,password})
 });
-
 const data=await res.json();
-
 if(data.status=="success"){
 document.getElementById("loginBox").style.display="none";
 document.getElementById("mainPanel").style.display="block";
@@ -188,7 +174,7 @@ alert("Invalid username or password");
 async function loadAppeals(){
 const res=await fetch(API,{
 method:"POST",
-body:JSON.stringify({action:"getAllAppeals"})
+body:JSON.stringify({action:"getAllAppealsControl"})
 });
 const data=await res.json();
 allAppeals=data;
@@ -202,30 +188,30 @@ const tbody=document.querySelector("#appealsTable tbody");
 tbody.innerHTML="";
 data.forEach(a=>{
 const tr=document.createElement("tr");
-const dateStr = new Date(a.date).toLocaleDateString() + " " + new Date(a.date).toLocaleTimeString();
 tr.innerHTML=`
-<td>${a.id}</td>
-<td>${a.name}</td>
-<td>${a.course}</td>
-<td>${a.reason}</td>
-<td>${dateStr}</td>
+<td>${a.StudentID}</td>
+<td>${a.StudentName}</td>
+<td>${a.Course}</td>
+<td>${a.Reason}</td>
+<td>${a.Date}</td>
 <td>
-<select onchange="updateStatus('${a.id}','${a.course}',this.value)">
-<option value="Pending"${a.status=="Pending"?" selected":""}>Pending</option>
-<option value="Under Review"${a.status=="Under Review"?" selected":""}>Under Review</option>
-<option value="Accepted"${a.status=="Accepted"?" selected":""}>Accepted</option>
-<option value="Rejected"${a.status=="Rejected"?" selected":""}>Rejected</option>
+<select onchange="updateStatus('${a.StudentID}','${a.Course}',this.value)">
+<option value="Pending"${a.Status=="Pending"?" selected":""}>Pending</option>
+<option value="Under Review"${a.Status=="Under Review"?" selected":""}>Under Review</option>
+<option value="Accepted"${a.Status=="Accepted"?" selected":""}>Accepted</option>
+<option value="Rejected"${a.Status=="Rejected"?" selected":""}>Rejected</option>
 </select>
-</td>`;
+</td>
+`;
 tbody.appendChild(tr);
 });
 }
 
 // ================= UPDATE STATUS =================
-async function updateStatus(id,course,status){
+async function updateStatus(studentId,course,status){
 await fetch(API,{
 method:"POST",
-body:JSON.stringify({action:"updateAppealStatus",id,course,status})
+body:JSON.stringify({action:"updateAppealStatus",studentId,course,status})
 });
 loadAppeals();
 }
@@ -233,30 +219,27 @@ loadAppeals();
 // ================= DASHBOARD =================
 function updateDashboard(data){
 document.getElementById("totalAppeals").innerText="Total: "+data.length;
-document.getElementById("pendingAppeals").innerText="Pending: "+data.filter(a=>a.status=="Pending").length;
-document.getElementById("underReviewAppeals").innerText="Under Review: "+data.filter(a=>a.status=="Under Review").length;
-document.getElementById("acceptedAppeals").innerText="Accepted: "+data.filter(a=>a.status=="Accepted").length;
-document.getElementById("rejectedAppeals").innerText="Rejected: "+data.filter(a=>a.status=="Rejected").length;
+document.getElementById("pendingAppeals").innerText="Pending: "+data.filter(a=>a.Status=="Pending").length;
+document.getElementById("underReviewAppeals").innerText="Under Review: "+data.filter(a=>a.Status=="Under Review").length;
+document.getElementById("acceptedAppeals").innerText="Accepted: "+data.filter(a=>a.Status=="Accepted").length;
+document.getElementById("rejectedAppeals").innerText="Rejected: "+data.filter(a=>a.Status=="Rejected").length;
 }
 
 // ================= SEARCH STUDENT =================
 function searchStudent(){
 const sid=document.getElementById("searchId").value.trim();
-if(!sid){ renderTable(allAppeals); return; }
-const filtered=allAppeals.filter(a=>a.id==sid);
+if(!sid) { renderTable(allAppeals); return; }
+const filtered=allAppeals.filter(a=>a.StudentID==sid);
 renderTable(filtered);
 }
 
 // ================= EXPORT EXCEL =================
 function exportExcel(){
-let csv=[];
-csv.push(['Student ID','Name','Course','Reason','Date','Status']);
-allAppeals.forEach(a=>{
-let dateStr = new Date(a.date).toLocaleDateString() + " " + new Date(a.date).toLocaleTimeString();
-csv.push([a.id,a.name,a.course,a.reason,dateStr,a.status]);
-});
-let csvContent="\ufeff"+csv.map(e=>e.map(v=>'"'+v.toString().replace(/"/g,'""')+'"').join(",")).join("\n");
-let blob=new Blob([csvContent],{type:"text/csv;charset=utf-8;"});
+let rows=allAppeals.map(a=>[
+a.StudentID,a.StudentName,a.Course,a.Reason,a.Date,a.Status
+]);
+let csv = "\ufeff" + rows.map(r=>r.map(c=>`"${c}"`).join(",")).join("\n");
+let blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
 let link=document.createElement("a");
 link.href=URL.createObjectURL(blob);
 link.download="UEC_Appeals.csv";
@@ -264,9 +247,7 @@ link.click();
 }
 
 // ================= LOGOUT =================
-function logout(){
-location.reload();
-}
+function logout(){ location.reload(); }
 </script>
 
 </body>
