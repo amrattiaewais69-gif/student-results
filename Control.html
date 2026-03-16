@@ -4,136 +4,39 @@
 <meta charset="UTF-8">
 <title>UEC Control Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
 <style>
 *{box-sizing:border-box;font-family:'Poppins',sans-serif}
-body{
-margin:0;
-background:#2f528f;
-min-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-}
-
-.card{
-background:#eee;
-border-radius:12px;
-padding:30px;
-text-align:center;
-margin:15px;
-}
-
-.logo{
-width:80px;
-margin-bottom:10px;
-}
-
-input,select{
-width:100%;
-padding:10px;
-margin:5px 0;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
-button{
-width:100%;
-padding:12px;
-margin-top:8px;
-background:#345a9d;
-border:none;
-color:white;
-border-radius:6px;
-cursor:pointer;
-font-size:15px;
-}
-
-button:hover{
-background:#274a86;
-}
-
-.footer{
-margin-top:20px;
-color:white;
-font-size:14px;
-text-align:center;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
-font-size:14px;
-}
-
-table th, table td{
-border:1px solid #999;
-padding:8px;
-text-align:center;
-}
-
-.dashboard{
-display:flex;
-justify-content:space-around;
-flex-wrap:wrap;
-margin-bottom:15px;
-}
-
-.dashboard div{
-background:#345a9d;
-color:white;
-padding:15px;
-border-radius:8px;
-flex:1 1 120px;
-margin:5px;
-}
-
-.searchBox{
-margin:10px 0;
-}
+body{margin:0; background:#2f528f; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px; color:#fff;}
+.card{background:#eee; color:#000; width:95%; max-width:1200px; border-radius:12px; padding:20px; margin-bottom:20px;}
+.logo{width:80px; margin-bottom:10px;}
+input,select{width:100%; padding:10px; margin:5px 0; border-radius:6px; border:1px solid #ccc;}
+button{padding:10px 15px; margin:5px 0; background:#345a9d; border:none; color:white; border-radius:6px; cursor:pointer; font-size:14px;}
+button:hover{background:#274a86;}
+table{width:100%; border-collapse:collapse; margin-top:10px;}
+th,td{border:1px solid #ccc; padding:8px; text-align:left;}
+th{background:#345a9d; color:white;}
+select{width:100%;}
+.footer{margin-top:20px; color:white; text-align:center;}
+.searchBox{display:flex; gap:10px; margin-bottom:10px;}
+@media(max-width:768px){table, th, td{font-size:12px;}}
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
-<div class="card" id="loginBox" style="width:400px;margin:auto;margin-top:80px">
-<div style="text-align:center;margin-bottom:10px">
-<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" style="width:80px">
-</div>
-<h3>Control Login</h3>
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-</div>
-
-<!-- MAIN PANEL -->
-<div class="card" id="mainPanel" style="display:none;width:95%;max-width:1200px">
-
-<!-- Logo -->
-<div style="text-align:center;margin-bottom:15px">
-<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" style="width:80px">
-</div>
-
-<h2>Appeals Dashboard</h2>
-
-<div class="dashboard">
-<div id="totalAppeals">Total: 0</div>
-<div id="pendingAppeals">Pending: 0</div>
-<div id="underReviewAppeals">Under Review: 0</div>
-<div id="acceptedAppeals">Accepted: 0</div>
-<div id="rejectedAppeals">Rejected: 0</div>
-</div>
+<div class="card">
+<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" class="logo">
+<h2>Control Panel - Appeals</h2>
 
 <div class="searchBox">
 <input id="searchId" placeholder="Search by Student ID">
 <button onclick="searchStudent()">Search</button>
+<button onclick="resetSearch()">Reset</button>
 </div>
 
+<button onclick="exportAppealsExcel()">Export Appeals Excel</button>
+
+<div style="overflow-x:auto;">
 <table id="appealsTable">
-<thead>
 <tr>
 <th>Student ID</th>
 <th>Name</th>
@@ -142,13 +45,8 @@ margin:10px 0;
 <th>Date</th>
 <th>Status</th>
 </tr>
-</thead>
-<tbody></tbody>
 </table>
-
-<button onclick="exportExcel()">Export Appeals Excel</button>
-<button onclick="logout()">Logout</button>
-
+</div>
 </div>
 
 <div class="footer">
@@ -159,127 +57,94 @@ UEC ICT Department<br>
 <script>
 const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-let allAppeals=[];
+let allAppeals = [];
 
-// ================= LOGIN =================
-async function login(){
-const username=document.getElementById("username").value;
-const password=document.getElementById("password").value;
-
-const res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({
-action:"controlLogin",
-username:username,
-password:password
-})
-});
-
-const data=await res.json();
-
-if(data.status=="success"){
-document.getElementById("loginBox").style.display="none";
-document.getElementById("mainPanel").style.display="block";
-loadAppeals();
-}else{
-alert("Invalid username or password");
-}
-}
-
-// ================= LOAD APPEALS =================
+// ==========================
+// Load All Appeals
+// ==========================
 async function loadAppeals(){
-const res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({action:"getAllAppeals"})
-});
-const data=await res.json();
-allAppeals=data;
-renderTable(allAppeals);
-updateDashboard(allAppeals);
+  const res = await fetch(API,{
+    method:"POST",
+    body: JSON.stringify({action:"getAllAppealsForControl"})
+  });
+  const data = await res.json();
+  allAppeals = data;
+  renderTable(allAppeals);
 }
 
-// ================= RENDER TABLE =================
+// ==========================
+// Render Table
+// ==========================
 function renderTable(data){
-const tbody=document.querySelector("#appealsTable tbody");
-tbody.innerHTML="";
-data.forEach(a=>{
-const tr=document.createElement("tr");
-tr.innerHTML=`
-<td>${a.id}</td>
-<td>${a.name}</td>
-<td>${a.course}</td>
-<td>${a.reason}</td>
-<td>${new Date(a.date).toLocaleString()}</td>
-<td>
-<select onchange="updateStatus('${a.id}','${a.course}',this.value)">
-<option value="Pending"${a.status=="Pending"?" selected":""}>Pending</option>
-<option value="Under Review"${a.status=="Under Review"?" selected":""}>Under Review</option>
-<option value="Accepted"${a.status=="Accepted"?" selected":""}>Accepted</option>
-<option value="Rejected"${a.status=="Rejected"?" selected":""}>Rejected</option>
-</select>
-</td>
-`;
-tbody.appendChild(tr);
-});
+  const table = document.getElementById("appealsTable");
+  table.innerHTML = "<tr><th>Student ID</th><th>Name</th><th>Course</th><th>Reason</th><th>Date</th><th>Status</th></tr>";
+  data.forEach(a=>{
+    let tr = document.createElement("tr");
+    tr.innerHTML = `<td>${a.StudentID}</td>
+                    <td>${a.StudentName}</td>
+                    <td>${a.Course}</td>
+                    <td>${a.Reason}</td>
+                    <td>${a.Date}</td>
+                    <td>
+                      <select data-student="${a.StudentID}" data-course="${a.Course}">
+                        <option ${a.Status==='Pending'?'selected':''}>Pending</option>
+                        <option ${a.Status==='Under Review'?'selected':''}>Under Review</option>
+                        <option ${a.Status==='Accepted'?'selected':''}>Accepted</option>
+                        <option ${a.Status==='Rejected'?'selected':''}>Rejected</option>
+                      </select>
+                    </td>`;
+    table.appendChild(tr);
+  });
+
+  table.querySelectorAll("select").forEach(sel=>{
+    sel.addEventListener("change", async function(){
+      const studentId = this.dataset.student;
+      const course = this.dataset.course;
+      const status = this.value;
+      await fetch(API,{
+        method:"POST",
+        body: JSON.stringify({
+          action:"updateAppealStatus",
+          studentId: studentId,
+          course: course,
+          status: status
+        })
+      });
+      alert("Status updated successfully");
+    });
+  });
 }
 
-// ================= UPDATE STATUS =================
-async function updateStatus(id,course,status){
-await fetch(API,{
-method:"POST",
-body:JSON.stringify({
-action:"updateAppealStatus",
-id:id,
-course:course,
-status:status
-})
-});
-loadAppeals();
-}
-
-// ================= DASHBOARD =================
-function updateDashboard(data){
-document.getElementById("totalAppeals").innerText="Total: "+data.length;
-document.getElementById("pendingAppeals").innerText="Pending: "+data.filter(a=>a.status=="Pending").length;
-document.getElementById("underReviewAppeals").innerText="Under Review: "+data.filter(a=>a.status=="Under Review").length;
-document.getElementById("acceptedAppeals").innerText="Accepted: "+data.filter(a=>a.status=="Accepted").length;
-document.getElementById("rejectedAppeals").innerText="Rejected: "+data.filter(a=>a.status=="Rejected").length;
-}
-
-// ================= SEARCH STUDENT =================
+// ==========================
+// Search Student
+// ==========================
 function searchStudent(){
-const sid=document.getElementById("searchId").value.trim();
-if(!sid) { renderTable(allAppeals); return; }
-const filtered=allAppeals.filter(a=>a.id==sid);
-renderTable(filtered);
+  const id = document.getElementById("searchId").value.trim();
+  if(id==="") return;
+  const filtered = allAppeals.filter(a=>a.StudentID===id);
+  renderTable(filtered);
+}
+function resetSearch(){
+  renderTable(allAppeals);
+  document.getElementById("searchId").value="";
 }
 
-// ================= EXPORT EXCEL =================
-function exportExcel(){
-let table=document.getElementById("appealsTable");
-let rows=table.querySelectorAll("tr");
-let csv=[];
-rows.forEach(r=>{
-let cols=r.querySelectorAll("td,th");
-let row=[];
-cols.forEach(c=>{
-row.push('"' + c.innerText.replace(/"/g,'""') + '"');
-});
-csv.push(row.join(","));
-});
-let csvFile="\ufeff"+csv.join("\n");
-let blob=new Blob([csvFile],{type:"text/csv;charset=utf-8;"});
-let link=document.createElement("a");
-link.href=URL.createObjectURL(blob);
-link.download="UEC_Appeals.csv";
-link.click();
+// ==========================
+// Export Appeals Excel
+// ==========================
+function exportAppealsExcel(){
+  const sheetID = "14IW4oA1wo_-PyUXQMQdIEwoLcTu1nB4Yfz2PnGZeATM"; // ضع هنا ID شيت Appeals
+  const url = `https://docs.google.com/spreadsheets/d/${sheetID}/export?format=xlsx&sheet=Appeals`;
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "UEC_Appeals.xlsx";
+  link.click();
 }
 
-// ================= LOGOUT =================
-function logout(){
-location.reload();
-}
+// ==========================
+// Initialize
+// ==========================
+loadAppeals();
 </script>
-
 </body>
 </html>
