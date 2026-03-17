@@ -106,8 +106,9 @@ text-align:center;
 <!-- CONTROL PANEL -->
 <div class="card" id="controlPanel" style="display:none">
 
+<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" class="logo">
 <h2>Appeals Dashboard</h2>
-
+  
 <button onclick="downloadExcel()">Download Appeals Excel</button>
 
 <div class="table-container">
@@ -192,7 +193,7 @@ row.innerHTML=`
 <td>${a.StudentName}</td>
 <td>${a.Course}</td>
 <td style="max-width:250px;word-wrap:break-word">${a.Reason}</td>
-<td>${a.Date ? new Date(a.Date).toLocaleDateString() : ""}</td>
+<td>${a.Date}</td>
 <td>
 <select id="status_${a.StudentID}_${a.Course}">
 <option value="Pending" ${a.Status==="Pending"?"selected":""}>Pending</option>
