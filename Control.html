@@ -83,25 +83,24 @@ async function loadAppeals(){
   </tr>`;
 
   data.forEach(a=>{
-    const row=document.createElement("tr");
-    row.innerHTML=`
-      <td>${a.studentName}</td>
-      <td>${a.course}</td>
-      <td>${a.reason}</td>
-      <td>${new Date(a.date).toLocaleDateString()}</td>
-      <td>
-        <select id="status_${a.studentId}_${a.course}">
-          <option value="Pending" ${a.status==="Pending"?"selected":""}>Pending</option>
-          <option value="Under Review">Under Review</option>
-          <option value="Accepted">Accepted</option>
-          <option value="Rejected">Rejected</option>
-        </select>
-      </td>
-      <td><button onclick="updateStatus('${a.studentId}','${a.course}')">Save</button></td>
-    `;
-    table.appendChild(row);
-  });
-}
+  const row=document.createElement("tr");
+  row.innerHTML=`
+    <td>${a.StudentName}</td>
+    <td>${a.Course}</td>
+    <td>${a.Reason}</td>
+    <td>${new Date(a.Date).toLocaleDateString()}</td>
+    <td>
+      <select id="status_${a.StudentID}_${a.Course}">
+        <option value="Pending" ${a.Status==="Pending"?"selected":""}>Pending</option>
+        <option value="Under Review" ${a.Status==="Under Review"?"selected":""}>Under Review</option>
+        <option value="Accepted" ${a.Status==="Accepted"?"selected":""}>Accepted</option>
+        <option value="Rejected" ${a.Status==="Rejected"?"selected":""}>Rejected</option>
+      </select>
+    </td>
+    <td><button onclick="updateStatus('${a.StudentID}','${a.Course}')">Save</button></td>
+  `;
+  table.appendChild(row);
+});
 
 async function updateStatus(studentId, course){
   const sel=document.getElementById(`status_${studentId}_${course}`);
