@@ -4,129 +4,250 @@
 <meta charset="UTF-8">
 <title>UEC Control Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
-*{box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.card{background:#eee;width:500px;border-radius:12px;padding:30px;text-align:center;}
-.logo{width:90px;margin-bottom:10px;}
-input{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ccc;}
-button{width:100%;padding:12px;margin-top:10px;background:#345a9d;border:none;color:white;border-radius:6px;cursor:pointer;font-size:15px;}
-button:hover{background:#274a86;}
-.footer{margin-top:30px;color:white;font-size:14px;text-align:center;}
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-th, td{border:1px solid #ddd;padding:8px;text-align:center;}
-select{padding:6px;}
+*{box-sizing:border-box;font-family:'Poppins',sans-serif}
+body{
+margin:0;
+background:#2f528f;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+}
+.card{
+background:#eee;
+border-radius:12px;
+padding:30px;
+text-align:center;
+margin:15px;
+}
+.logo{
+width:80px;
+margin-bottom:10px;
+}
+input,select{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:6px;
+border:1px solid #ccc;
+}
+button{
+width:100%;
+padding:12px;
+margin-top:8px;
+background:#345a9d;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+font-size:15px;
+}
+button:hover{
+background:#274a86;
+}
+.footer{
+margin-top:20px;
+color:white;
+font-size:14px;
+text-align:center;
+}
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+font-size:14px;
+table-layout:auto;
+}
+table th, table td{
+border:1px solid #999;
+padding:8px;
+text-align:center;
+word-break:break-word;
+}
+.dashboard{
+display:flex;
+justify-content:space-around;
+flex-wrap:wrap;
+margin-bottom:15px;
+}
+.dashboard div{
+background:#345a9d;
+color:white;
+padding:15px;
+border-radius:8px;
+flex:1 1 120px;
+margin:5px;
+}
+.searchBox{
+margin:10px 0;
+}
 </style>
 </head>
+
 <body>
 
-<div class="card" id="loginBox">
-<img src="logo.png" class="logo">
-<h2>Control Panel Login</h2>
+<!-- LOGIN -->
+<div class="card" id="loginBox" style="width:400px;margin:auto;margin-top:80px">
+<div style="text-align:center;margin-bottom:10px">
+<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" style="width:80px">
+</div>
+<h3>Control Login</h3>
 <input id="username" placeholder="Username">
 <input id="password" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
 </div>
 
-<div class="card" id="controlPanel" style="display:none">
-<h2>Control Panel</h2>
-<button onclick="downloadExcel()">Download All Appeals (Excel)</button>
-<div id="appealsSection">
+<!-- MAIN PANEL -->
+<div class="card" id="mainPanel" style="display:none;width:95%;max-width:1200px">
+
+<!-- Logo -->
+<div style="text-align:center;margin-bottom:15px">
+<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" style="width:80px">
+</div>
+
+<h2>Appeals Dashboard</h2>
+
+<div class="dashboard">
+<div id="totalAppeals">Total: 0</div>
+<div id="pendingAppeals">Pending: 0</div>
+<div id="underReviewAppeals">Under Review: 0</div>
+<div id="acceptedAppeals">Accepted: 0</div>
+<div id="rejectedAppeals">Rejected: 0</div>
+</div>
+
+<div class="searchBox">
+<input id="searchId" placeholder="Search by Student ID">
+<button onclick="searchStudent()">Search</button>
+</div>
+
 <table id="appealsTable">
+<thead>
 <tr>
-<th>Student Name</th>
+<th>Student ID</th>
+<th>Name</th>
 <th>Course</th>
 <th>Reason</th>
 <th>Date</th>
 <th>Status</th>
-<th>Update</th>
 </tr>
+</thead>
+<tbody></tbody>
 </table>
-</div>
+
+<button onclick="exportExcel()">Export Appeals Excel</button>
 <button onclick="logout()">Logout</button>
+
 </div>
 
 <div class="footer">
-Designed by UEC ICT Department<br>© 2026 University of East Capital
+UEC ICT Department<br>
+© 2026 University of East Capital
 </div>
 
 <script>
 const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+let allAppeals=[];
 
+// ================= LOGIN =================
 async function login(){
-  const username=document.getElementById("username").value;
-  const password=document.getElementById("password").value;
-  if(!username || !password){ alert("Enter username and password"); return; }
+const username=document.getElementById("username").value.trim();
+const password=document.getElementById("password").value.trim();
 
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"verifyAccount",username,password})});
-  const data=await res.json();
-  if(data.status==="success"){
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("controlPanel").style.display="block";
-    loadAppeals();
-  }else{
-    alert(data.message);
-  }
+const res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({action:"verifyAccount",username,password})
+});
+const data=await res.json();
+if(data.status=="success"){
+document.getElementById("loginBox").style.display="none";
+document.getElementById("mainPanel").style.display="block";
+loadAppeals();
+}else{
+alert("Invalid username or password");
+}
 }
 
+// ================= LOAD APPEALS =================
 async function loadAppeals(){
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getAllPendingAppealsForControl"})});
-  const data=await res.json();
-  const table=document.getElementById("appealsTable");
-  table.innerHTML=`<tr>
-    <th>Student Name</th>
-    <th>Course</th>
-    <th>Reason</th>
-    <th>Date</th>
-    <th>Status</th>
-    <th>Update</th>
-  </tr>`;
-
-  data.forEach(a=>{
-    const row=document.createElement("tr");
-    row.innerHTML=`
-      <td>${a.studentName}</td>
-      <td>${a.course}</td>
-      <td>${a.reason}</td>
-      <td>${new Date(a.date).toLocaleDateString()}</td>
-      <td>
-        <select id="status_${a.studentId}_${a.course}">
-          <option value="Pending" ${a.status==="Pending"?"selected":""}>Pending</option>
-          <option value="Under Review">Under Review</option>
-          <option value="Accepted">Accepted</option>
-          <option value="Rejected">Rejected</option>
-        </select>
-      </td>
-      <td><button onclick="updateStatus('${a.studentId}','${a.course}')">Save</button></td>
-    `;
-    table.appendChild(row);
-  });
+const res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({action:"getAllAppealsForControl"})
+});
+const data=await res.json();
+allAppeals=data;
+renderTable(allAppeals);
+updateDashboard(allAppeals);
 }
 
-async function updateStatus(studentId, course){
-  const sel=document.getElementById(`status_${studentId}_${course}`);
-  const status=sel.value;
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"updateAppealStatus",studentId,course,status})});
-  const data=await res.json();
-  if(data.status==="success"){ alert("Status updated successfully"); loadAppeals(); }
-  else{ alert("Error: "+data.message); }
+// ================= RENDER TABLE =================
+function renderTable(data){
+const tbody=document.querySelector("#appealsTable tbody");
+tbody.innerHTML="";
+data.forEach(a=>{
+const tr=document.createElement("tr");
+tr.innerHTML=`
+<td>${a.StudentID}</td>
+<td>${a.StudentName}</td>
+<td>${a.Course}</td>
+<td>${a.Reason}</td>
+<td>${a.Date}</td>
+<td>
+<select onchange="updateStatus('${a.StudentID}','${a.Course}',this.value)">
+<option value="Pending"${a.Status=="Pending"?" selected":""}>Pending</option>
+<option value="Under Review"${a.Status=="Under Review"?" selected":""}>Under Review</option>
+<option value="Accepted"${a.Status=="Accepted"?" selected":""}>Accepted</option>
+<option value="Rejected"${a.Status=="Rejected"?" selected":""}>Rejected</option>
+</select>
+</td>
+`;
+tbody.appendChild(tr);
+});
 }
 
-async function downloadExcel(){
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"exportAppealsExcel"})});
-  const blob=await res.blob();
-  const url=window.URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;
-  a.download="Appeals.csv";
-  a.click();
-  window.URL.revokeObjectURL(url);
+// ================= UPDATE STATUS =================
+async function updateStatus(studentId,course,status){
+await fetch(API,{
+method:"POST",
+body:JSON.stringify({action:"updateAppealStatus",studentId,course,status})
+});
+loadAppeals();
 }
 
-function logout(){
-  document.getElementById("controlPanel").style.display="none";
-  document.getElementById("loginBox").style.display="block";
+// ================= DASHBOARD =================
+function updateDashboard(data){
+document.getElementById("totalAppeals").innerText="Total: "+data.length;
+document.getElementById("pendingAppeals").innerText="Pending: "+data.filter(a=>a.Status=="Pending").length;
+document.getElementById("underReviewAppeals").innerText="Under Review: "+data.filter(a=>a.Status=="Under Review").length;
+document.getElementById("acceptedAppeals").innerText="Accepted: "+data.filter(a=>a.Status=="Accepted").length;
+document.getElementById("rejectedAppeals").innerText="Rejected: "+data.filter(a=>a.Status=="Rejected").length;
 }
+
+// ================= SEARCH STUDENT =================
+function searchStudent(){
+const sid=document.getElementById("searchId").value.trim();
+if(!sid) { renderTable(allAppeals); return; }
+const filtered=allAppeals.filter(a=>a.StudentID==sid);
+renderTable(filtered);
+}
+
+// ================= EXPORT EXCEL =================
+function exportExcel(){
+let rows=allAppeals.map(a=>[
+a.StudentID,a.StudentName,a.Course,a.Reason,a.Date,a.Status
+]);
+let csv = "\ufeff" + rows.map(r=>r.map(c=>`"${c}"`).join(",")).join("\n");
+let blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+let link=document.createElement("a");
+link.href=URL.createObjectURL(blob);
+link.download="UEC_Appeals.csv";
+link.click();
+}
+
+// ================= LOGOUT =================
+function logout(){ location.reload(); }
 </script>
 
 </body>
