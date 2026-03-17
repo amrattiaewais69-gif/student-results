@@ -3,35 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <title>UEC Control Panel</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
 *{box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.card{background:#eee;width:500px;border-radius:12px;padding:30px;text-align:center;}
+
+body{
+margin:0;
+background:#2f528f;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+}
+
+.card{
+background:#eee;
+width:95%;
+max-width:1100px;
+border-radius:12px;
+padding:25px;
+text-align:center;
+}
+
 .logo{width:90px;margin-bottom:10px;}
-input{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ccc;}
-button{width:100%;padding:12px;margin-top:10px;background:#345a9d;border:none;color:white;border-radius:6px;cursor:pointer;font-size:15px;}
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+button{
+padding:10px 15px;
+background:#345a9d;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+font-size:14px;
+}
+
 button:hover{background:#274a86;}
-.footer{margin-top:30px;color:white;font-size:14px;text-align:center;}
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-th, td{border:1px solid #ddd;padding:8px;text-align:center;}
-select{padding:6px;}
+
+.logout{background:#777;margin-top:15px;}
+
+.table-container{
+overflow-x:auto;
+margin-top:20px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:900px;
+}
+
+th{
+background:#4e81bd;
+color:white;
+padding:10px;
+}
+
+td{
+padding:10px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+select{
+padding:6px;
+border-radius:5px;
+}
+
+.footer{
+margin-top:20px;
+color:white;
+font-size:14px;
+text-align:center;
+}
 </style>
+
 </head>
+
 <body>
 
+<!-- LOGIN -->
 <div class="card" id="loginBox">
 <img src="logo.png" class="logo">
 <h2>Control Panel Login</h2>
+
 <input id="username" placeholder="Username">
 <input id="password" type="password" placeholder="Password">
+
 <button onclick="login()">Login</button>
 </div>
 
+<!-- CONTROL PANEL -->
 <div class="card" id="controlPanel" style="display:none">
-<h2>Control Panel</h2>
-<button onclick="downloadExcel()">Download All Appeals (Excel)</button>
-<div id="appealsSection">
+
+<h2>Appeals Dashboard</h2>
+
+<button onclick="downloadExcel()">Download Appeals Excel</button>
+
+<div class="table-container">
 <table id="appealsTable">
 <tr>
 <th>Student Name</th>
@@ -43,89 +122,139 @@ select{padding:6px;}
 </tr>
 </table>
 </div>
-<button onclick="logout()">Logout</button>
+
+<button class="logout" onclick="logout()">Logout</button>
+
 </div>
 
 <div class="footer">
-Designed by UEC ICT Department<br>© 2026 University of East Capital
+UEC ICT Department<br>
+© 2026 University of East Capital
 </div>
 
 <script>
+
 const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
+// ================= LOGIN =================
 async function login(){
-  const username=document.getElementById("username").value;
-  const password=document.getElementById("password").value;
-  if(!username || !password){ alert("Enter username and password"); return; }
+const username=document.getElementById("username").value;
+const password=document.getElementById("password").value;
 
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"verifyAccount",username,password})});
-  const data=await res.json();
-  if(data.status==="success"){
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("controlPanel").style.display="block";
-    loadAppeals();
-  }else{
-    alert(data.message);
-  }
-}
-
-async function loadAppeals(){
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getAllAppealsControl"})});
-  const data=await res.json();
-  const table=document.getElementById("appealsTable");
-  table.innerHTML=`<tr>
-    <th>Student Name</th>
-    <th>Course</th>
-    <th>Reason</th>
-    <th>Date</th>
-    <th>Status</th>
-    <th>Update</th>
-  </tr>`;
-
-  data.forEach(a=>{
-  const row=document.createElement("tr");
-  row.innerHTML=`
-    <td>${a.StudentName}</td>
-    <td>${a.Course}</td>
-    <td>${a.Reason}</td>
-    <td>${new Date(a.Date).toLocaleDateString()}</td>
-    <td>
-      <select id="status_${a.StudentID}_${a.Course}">
-        <option value="Pending" ${a.Status==="Pending"?"selected":""}>Pending</option>
-        <option value="Under Review" ${a.Status==="Under Review"?"selected":""}>Under Review</option>
-        <option value="Accepted" ${a.Status==="Accepted"?"selected":""}>Accepted</option>
-        <option value="Rejected" ${a.Status==="Rejected"?"selected":""}>Rejected</option>
-      </select>
-    </td>
-    <td><button onclick="updateStatus('${a.StudentID}','${a.Course}')">Save</button></td>
-  `;
-  table.appendChild(row);
+const res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"verifyAccount",
+username:username,
+password:password
+})
 });
 
-async function updateStatus(studentId, course){
-  const sel=document.getElementById(`status_${studentId}_${course}`);
-  const status=sel.value;
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"updateAppealStatus",studentId,course,status})});
-  const data=await res.json();
-  if(data.status==="success"){ alert("Status updated successfully"); loadAppeals(); }
-  else{ alert("Error: "+data.message); }
+const data=await res.json();
+
+if(data.status==="success"){
+document.getElementById("loginBox").style.display="none";
+document.getElementById("controlPanel").style.display="block";
+loadAppeals();
+}else{
+alert("Invalid username or password");
+}
 }
 
-async function downloadExcel(){
-  const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"exportAppealsExcel"})});
-  const blob=await res.blob();
-  const url=window.URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;
-  a.download="Appeals.csv";
-  a.click();
-  window.URL.revokeObjectURL(url);
+// ================= LOAD APPEALS =================
+async function loadAppeals(){
+
+const res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({action:"getAllAppealsControl"})
+});
+
+const data=await res.json();
+
+const table=document.getElementById("appealsTable");
+
+table.innerHTML=`
+<tr>
+<th>Student Name</th>
+<th>Course</th>
+<th>Reason</th>
+<th>Date</th>
+<th>Status</th>
+<th>Update</th>
+</tr>
+`;
+
+data.forEach(a=>{
+
+const row=document.createElement("tr");
+
+row.innerHTML=`
+<td>${a.StudentName}</td>
+<td>${a.Course}</td>
+<td style="max-width:250px;word-wrap:break-word">${a.Reason}</td>
+<td>${a.Date ? new Date(a.Date).toLocaleDateString() : ""}</td>
+<td>
+<select id="status_${a.StudentID}_${a.Course}">
+<option value="Pending" ${a.Status==="Pending"?"selected":""}>Pending</option>
+<option value="Under Review" ${a.Status==="Under Review"?"selected":""}>Under Review</option>
+<option value="Accepted" ${a.Status==="Accepted"?"selected":""}>Accepted</option>
+<option value="Rejected" ${a.Status==="Rejected"?"selected":""}>Rejected</option>
+</select>
+</td>
+<td>
+<button onclick="updateStatus('${a.StudentID}','${a.Course}')">Save</button>
+</td>
+`;
+
+table.appendChild(row);
+
+});
+
 }
 
+// ================= UPDATE STATUS =================
+async function updateStatus(studentId,course){
+
+const sel=document.getElementById(`status_${studentId}_${course}`);
+const status=sel.value;
+
+const res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"updateAppealStatus",
+studentId:studentId,
+course:course,
+status:status
+})
+});
+
+const data=await res.json();
+
+if(data.status==="success"){
+alert("Updated successfully");
+loadAppeals();
+}else{
+alert("Error updating");
+}
+
+}
+
+// ================= DOWNLOAD =================
+function downloadExcel(){
+const sheetID="14IW4oA1wo_-PyUXQMQdIEwoLcTu1nB4Yfz2PnGZeATM";
+const url=`https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=Appeals`;
+
+const a=document.createElement("a");
+a.href=url;
+a.download="Appeals.csv";
+a.click();
+}
+
+// ================= LOGOUT =================
 function logout(){
-  document.getElementById("controlPanel").style.display="none";
-  document.getElementById("loginBox").style.display="block";
+location.reload();
 }
+
 </script>
 
 </body>
