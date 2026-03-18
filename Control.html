@@ -144,6 +144,10 @@ color:white;
 <h3 id="rejectedCount">0</h3><p>Rejected</p>
 </div>
 
+  <div class="statBox" onclick="applyFilter('Under Review')">
+<h3 id="Under ReviewCount">0</h3><p>Under Review</p>
+</div>
+  
 </div>
 
 <input id="searchBox" placeholder="Search by Name or ID" onkeyup="filterTable()">
@@ -203,12 +207,14 @@ data.forEach(x=>{
 if(x.Status==="Pending")p++;
 if(x.Status==="Accepted")a++;
 if(x.Status==="Rejected")r++;
+if(x.Status==="Under Review")u++;
 });
 
 totalCount.innerText=total;
 pendingCount.innerText=p;
 acceptedCount.innerText=a;
 rejectedCount.innerText=r;
+Under ReviewCount.innerText=u;
 
 // FILTER
 let filtered=data;
