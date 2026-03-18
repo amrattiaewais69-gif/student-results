@@ -287,13 +287,16 @@ row.style.display="none";
 
 // ================= DOWNLOAD =================
 function downloadExcel(){
+
 const sheetID="14IW4oA1wo_-PyUXQMQdIEwoLcTu1nB4Yfz2PnGZeATM";
-const url=`https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=Appeals`;
+
+const url=`https://docs.google.com/spreadsheets/d/${sheetID}/export?format=xlsx&gid=1967284628`;
 
 const a=document.createElement("a");
 a.href=url;
-a.download="Appeals.csv";
+a.download="UEC_Appeals.xlsx";
 a.click();
+
 }
 
 // ================= LOGOUT =================
