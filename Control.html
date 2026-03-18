@@ -93,6 +93,27 @@ font-size:14px;
 margin-top:15px;
 }
 
+/* DASHBOARD */
+.statBox{
+background:white;
+padding:15px;
+border-radius:10px;
+width:180px;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.statBox h3{
+margin:0;
+font-size:28px;
+color:#2f528f;
+}
+
+.statBox p{
+margin:5px 0 0;
+font-size:14px;
+color:#555;
+}
+
 .footer{
 margin-top:20px;
 color:white;
@@ -121,6 +142,31 @@ text-align:center;
 
 <img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" class="logo">
 <h2>Appeals Dashboard</h2>
+
+<!-- DASHBOARD -->
+<div id="stats" style="display:flex;gap:15px;flex-wrap:wrap;margin-top:20px;justify-content:center;">
+
+<div class="statBox">
+<h3 id="totalCount">0</h3>
+<p>Total Appeals</p>
+</div>
+
+<div class="statBox">
+<h3 id="pendingCount">0</h3>
+<p>Pending</p>
+</div>
+
+<div class="statBox">
+<h3 id="acceptedCount">0</h3>
+<p>Accepted</p>
+</div>
+
+<div class="statBox">
+<h3 id="rejectedCount">0</h3>
+<p>Rejected</p>
+</div>
+
+</div>
 
 <input 
 id="searchBox" 
@@ -192,6 +238,26 @@ body:JSON.stringify({action:"getAllAppealsControl"})
 
 const data=await res.json();
 
+
+// ===== DASHBOARD COUNTERS =====
+let total = data.length;
+let pending = 0;
+let accepted = 0;
+let rejected = 0;
+
+data.forEach(a=>{
+if(a.Status === "Pending") pending++;
+else if(a.Status === "Accepted") accepted++;
+else if(a.Status === "Rejected") rejected++;
+});
+
+document.getElementById("totalCount").innerText = total;
+document.getElementById("pendingCount").innerText = pending;
+document.getElementById("acceptedCount").innerText = accepted;
+document.getElementById("rejectedCount").innerText = rejected;
+
+
+// ===== TABLE =====
 const table=document.getElementById("appealsTable");
 
 table.innerHTML=`
@@ -287,17 +353,17 @@ row.style.display="none";
 
 // ================= DOWNLOAD =================
 function downloadExcel(){
-
 const sheetID="14IW4oA1wo_-PyUXQMQdIEwoLcTu1nB4Yfz2PnGZeATM";
-
 const url=`https://docs.google.com/spreadsheets/d/${sheetID}/export?format=xlsx&gid=1967284628`;
 
 const a=document.createElement("a");
 a.href=url;
 a.download="UEC_Appeals.xlsx";
 a.click();
-
 }
+
+// ================= AUTO REFRESH =================
+setInterval(loadAppeals,30000);
 
 // ================= LOGOUT =================
 function logout(){
