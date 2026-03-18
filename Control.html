@@ -34,14 +34,6 @@ margin-bottom:5px;
 opacity:0.9;
 }
 
-input{
-width:100%;
-padding:12px;
-margin:8px 0;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
 button{
 padding:10px 15px;
 background:#345a9d;
@@ -49,11 +41,9 @@ border:none;
 color:white;
 border-radius:6px;
 cursor:pointer;
-font-size:14px;
 }
 
 button:hover{background:#274a86;}
-
 .logout{background:#777;margin-top:15px;}
 
 .table-container{
@@ -89,7 +79,6 @@ width:100%;
 padding:12px;
 border-radius:8px;
 border:1px solid #ccc;
-font-size:14px;
 margin-top:15px;
 }
 
@@ -100,6 +89,12 @@ padding:15px;
 border-radius:10px;
 width:180px;
 box-shadow:0 2px 8px rgba(0,0,0,0.1);
+cursor:pointer;
+transition:0.3s;
+}
+
+.statBox:hover{
+transform:scale(1.05);
 }
 
 .statBox h3{
@@ -108,17 +103,9 @@ font-size:28px;
 color:#2f528f;
 }
 
-.statBox p{
-margin:5px 0 0;
-font-size:14px;
-color:#555;
-}
-
 .footer{
 margin-top:20px;
 color:white;
-font-size:14px;
-text-align:center;
 }
 </style>
 
@@ -126,109 +113,81 @@ text-align:center;
 
 <body>
 
-<!-- LOGIN -->
 <div class="card" id="loginBox">
 <img src="logo.png" class="logo">
 <h2>Control Panel Login</h2>
-
 <input id="username" placeholder="Username">
 <input id="password" type="password" placeholder="Password">
-
 <button onclick="login()">Login</button>
 </div>
 
-<!-- CONTROL PANEL -->
 <div class="card" id="controlPanel" style="display:none">
 
 <img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" class="logo">
 <h2>Appeals Dashboard</h2>
 
-<!-- DASHBOARD -->
-<div id="stats" style="display:flex;gap:15px;flex-wrap:wrap;margin-top:20px;justify-content:center;">
+<div style="display:flex;gap:15px;flex-wrap:wrap;justify-content:center;margin-top:20px;">
 
-<div class="statBox">
-<h3 id="totalCount">0</h3>
-<p>Total Appeals</p>
+<div class="statBox" onclick="applyFilter('all')">
+<h3 id="totalCount">0</h3><p>Total</p>
 </div>
 
-<div class="statBox">
-<h3 id="pendingCount">0</h3>
-<p>Pending</p>
+<div class="statBox" onclick="applyFilter('Pending')">
+<h3 id="pendingCount">0</h3><p>Pending</p>
 </div>
 
-<div class="statBox">
-<h3 id="acceptedCount">0</h3>
-<p>Accepted</p>
+<div class="statBox" onclick="applyFilter('Accepted')">
+<h3 id="acceptedCount">0</h3><p>Accepted</p>
 </div>
 
-<div class="statBox">
-<h3 id="rejectedCount">0</h3>
-<p>Rejected</p>
+<div class="statBox" onclick="applyFilter('Rejected')">
+<h3 id="rejectedCount">0</h3><p>Rejected</p>
 </div>
 
 </div>
 
-<input 
-id="searchBox" 
-placeholder="Search by Student Name or ID..."
-onkeyup="filterTable()"
->
+<input id="searchBox" placeholder="Search by Name or ID" onkeyup="filterTable()">
 
-<button onclick="downloadExcel()">Download Appeals Excel</button>
+<button onclick="downloadExcel()">Download Excel</button>
 
 <div class="table-container">
-<table id="appealsTable">
-<tr>
-<th>Student ID</th>
-<th>Student Name</th>
-<th>Course</th>
-<th>Reason</th>
-<th>Date</th>
-<th>Status</th>
-<th>Update</th>
-</tr>
-</table>
+<table id="appealsTable"></table>
 </div>
 
 <button class="logout" onclick="logout()">Logout</button>
 
 </div>
 
-<div class="footer">
-UEC ICT Department<br>
-© 2026 University of East Capital
-</div>
-
 <script>
 
 const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
-// ================= LOGIN =================
+let currentFilter="all";
+let currentUser="";
+
+// LOGIN
 async function login(){
 const username=document.getElementById("username").value;
 const password=document.getElementById("password").value;
 
 const res=await fetch(API,{
 method:"POST",
-body:JSON.stringify({
-action:"verifyControlAccount",
-username:username,
-password:password
-})
+body:JSON.stringify({action:"verifyControlAccount",username,password})
 });
 
 const data=await res.json();
 
 if(data.status==="success"){
+currentUser=username;
 document.getElementById("loginBox").style.display="none";
 document.getElementById("controlPanel").style.display="block";
 loadAppeals();
 }else{
-alert("Invalid username or password");
+alert("Invalid login");
 }
 }
 
-// ================= LOAD APPEALS =================
+// LOAD
 async function loadAppeals(){
 
 const res=await fetch(API,{
@@ -238,137 +197,96 @@ body:JSON.stringify({action:"getAllAppealsControl"})
 
 const data=await res.json();
 
-
-// ===== DASHBOARD COUNTERS =====
-let total = data.length;
-let pending = 0;
-let accepted = 0;
-let rejected = 0;
-
-data.forEach(a=>{
-if(a.Status === "Pending") pending++;
-else if(a.Status === "Accepted") accepted++;
-else if(a.Status === "Rejected") rejected++;
+// COUNTERS
+let total=data.length,p=0,a=0,r=0;
+data.forEach(x=>{
+if(x.Status==="Pending")p++;
+if(x.Status==="Accepted")a++;
+if(x.Status==="Rejected")r++;
 });
 
-document.getElementById("totalCount").innerText = total;
-document.getElementById("pendingCount").innerText = pending;
-document.getElementById("acceptedCount").innerText = accepted;
-document.getElementById("rejectedCount").innerText = rejected;
+totalCount.innerText=total;
+pendingCount.innerText=p;
+acceptedCount.innerText=a;
+rejectedCount.innerText=r;
 
+// FILTER
+let filtered=data;
+if(currentFilter!=="all"){
+filtered=data.filter(x=>x.Status===currentFilter);
+}
 
-// ===== TABLE =====
-const table=document.getElementById("appealsTable");
+// TABLE
+let html=`<tr>
+<th>ID</th><th>Name</th><th>Course</th><th>Reason</th><th>Date</th><th>Status</th><th>Update</th>
+</tr>`;
 
-table.innerHTML=`
+filtered.forEach(a=>{
+html+=`
 <tr>
-<th>Student ID</th>
-<th>Student Name</th>
-<th>Course</th>
-<th>Reason</th>
-<th>Date</th>
-<th>Status</th>
-<th>Update</th>
-</tr>
-`;
-
-data.forEach(a=>{
-
-const row=document.createElement("tr");
-
-row.innerHTML=`
 <td>${a.StudentID}</td>
 <td>${a.StudentName}</td>
 <td>${a.Course}</td>
-<td style="max-width:250px;word-wrap:break-word">${a.Reason}</td>
+<td>${a.Reason}</td>
 <td>${a.Date}</td>
 <td>
-<select id="status_${a.StudentID}_${a.Course}">
-<option value="Pending" ${a.Status==="Pending"?"selected":""}>Pending</option>
-<option value="Under Review" ${a.Status==="Under Review"?"selected":""}>Under Review</option>
-<option value="Accepted" ${a.Status==="Accepted"?"selected":""}>Accepted</option>
-<option value="Rejected" ${a.Status==="Rejected"?"selected":""}>Rejected</option>
+<select id="s_${a.StudentID}_${a.Course}">
+<option ${a.Status==="Pending"?"selected":""}>Pending</option>
+<option ${a.Status==="Accepted"?"selected":""}>Accepted</option>
+<option ${a.Status==="Rejected"?"selected":""}>Rejected</option>
 </select>
 </td>
-<td>
-<button onclick="updateStatus('${a.StudentID}','${a.Course}')">Save</button>
-</td>
-`;
-
-table.appendChild(row);
-
+<td><button onclick="updateStatus('${a.StudentID}','${a.Course}')">Save</button></td>
+</tr>`;
 });
 
+appealsTable.innerHTML=html;
 }
 
-// ================= UPDATE STATUS =================
-async function updateStatus(studentId,course){
-
-const sel=document.getElementById(`status_${studentId}_${course}`);
-const status=sel.value;
+// UPDATE
+async function updateStatus(id,course){
+const status=document.getElementById(`s_${id}_${course}`).value;
 
 const res=await fetch(API,{
 method:"POST",
 body:JSON.stringify({
 action:"updateAppealStatus",
-studentId:studentId,
+studentId:id,
 course:course,
-status:status
+status:status,
+username:currentUser
 })
 });
 
 const data=await res.json();
 
 if(data.status==="success"){
-alert("Updated successfully");
+alert("Updated");
 loadAppeals();
 }else{
-alert("Error updating");
+alert("Error");
+}
 }
 
+// FILTER BUTTON
+function applyFilter(f){
+currentFilter=f;
+loadAppeals();
 }
 
-// ================= SEARCH =================
+// SEARCH
 function filterTable(){
-
-const input=document.getElementById("searchBox").value.toLowerCase();
-const rows=document.querySelectorAll("#appealsTable tr");
-
-rows.forEach((row,index)=>{
-
-if(index===0) return;
-
-const id=row.cells[0].innerText.toLowerCase();
-const name=row.cells[1].innerText.toLowerCase();
-
-if(id.includes(input) || name.includes(input)){
-row.style.display="";
-}else{
-row.style.display="none";
-}
-
+const val=searchBox.value.toLowerCase();
+[...appealsTable.rows].forEach((r,i)=>{
+if(i===0)return;
+r.style.display=r.innerText.toLowerCase().includes(val)?"":"none";
 });
-
 }
 
-// ================= DOWNLOAD =================
-function downloadExcel(){
-const sheetID="14IW4oA1wo_-PyUXQMQdIEwoLcTu1nB4Yfz2PnGZeATM";
-const url=`https://docs.google.com/spreadsheets/d/${sheetID}/export?format=xlsx&gid=1967284628`;
-
-const a=document.createElement("a");
-a.href=url;
-a.download="UEC_Appeals.xlsx";
-a.click();
-}
-
-// ================= AUTO REFRESH =================
+// AUTO REFRESH
 setInterval(loadAppeals,30000);
 
-// ================= LOGOUT =================
-function logout(){
-location.reload();
-}
+function logout(){location.reload();}
 
 </script>
 
