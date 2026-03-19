@@ -63,6 +63,11 @@ select{padding:6px;border-radius:5px;}
 <p>Pending</p>
 </div>
 
+<div class="statBox" id="box_Under Review" onclick="filterByStatus('Under Review')">
+<h3 id="underReviewCount">0</h3>
+<p>Under Review</p>
+</div>
+
 <div class="statBox" id="box_Accepted" onclick="filterByStatus('Accepted')">
 <h3 id="acceptedCount">0</h3>
 <p>Accepted</p>
@@ -158,10 +163,11 @@ table.appendChild(row);
 }
 
 function updateStats(data){
-let total=data.length,pending=0,accepted=0,rejected=0;
+let total=data.length,pending=0,underReview=0,accepted=0,rejected=0;
 
 data.forEach(a=>{
 if(a.Status==="Pending") pending++;
+else if(a.Status==="Under Review") underReview++;
 else if(a.Status==="Accepted") accepted++;
 else if(a.Status==="Rejected") rejected++;
 });
@@ -176,7 +182,7 @@ function filterByStatus(status){
 currentFilter=status;
 
 // highlight
-["ALL","Pending","Accepted","Rejected"].forEach(s=>{
+["ALL","Pending","Under Review","Accepted","Rejected"].forEach(s=>{
 const el=document.getElementById("box_"+s);
 if(el) el.classList.remove("active");
 });
