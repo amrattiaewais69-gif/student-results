@@ -111,6 +111,7 @@ const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"verifyCont
 const data=await res.json();
 
 if(data.status==="success"){
+localStorage.setItem("controlUser", username);
 document.getElementById("loginBox").style.display="none";
 document.getElementById("controlPanel").style.display="block";
 loadAppeals();
@@ -217,7 +218,7 @@ async function updateStatus(studentId,course){
 const sel=document.getElementById(`status_${studentId}_${course}`);
 const status=sel.value;
 
-const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"updateAppealStatus",studentId,course,status})});
+const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"updateAppealStatus",studentId,course,status,username: localStorage.getItem("controlUser")})});
 const data=await res.json();
 
 if(data.status==="success"){
