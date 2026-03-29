@@ -32,40 +32,10 @@ th{
   color:#fff;
 }
 
-/* Status Colors */
-.status-pending{
-  background:#f1c40f;
-  color:#000;
-  font-weight:bold;
-}
-
-.status-change{
-  background:#27ae60;
-  color:#fff;
-  font-weight:bold;
-}
-
-.status-nochange{
-  background:#c0392b;
-  color:#fff;
-  font-weight:bold;
-}
-
-button{
-  padding:6px 12px;
-  border:none;
-  cursor:pointer;
+/* نفس ستايل الدروب داون القديم */
+select{
+  padding:5px;
   border-radius:5px;
-}
-
-.accept{
-  background:#27ae60;
-  color:#fff;
-}
-
-.reject{
-  background:#c0392b;
-  color:#fff;
 }
 </style>
 </head>
@@ -94,22 +64,7 @@ button{
 const scriptURL = "https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
 // ==============================
-// Safe Status Class
-// ==============================
-function getStatusClass(status){
-  if(!status) return "";
-
-  status = status.toString().trim();
-
-  if(status === "Pending") return "status-pending";
-  if(status === "Revised with change") return "status-change";
-  if(status === "Revised without change") return "status-nochange";
-
-  return "";
-}
-
-// ==============================
-// Load Data (SAFE)
+// Load Data (Safe)
 // ==============================
 async function loadAppeals(){
   try{
@@ -120,18 +75,14 @@ async function loadAppeals(){
 
     const data = await res.json();
 
-    if(!Array.isArray(data)){
-      console.error("Invalid response", data);
-      return;
-    }
-
     const tbody = document.querySelector("#appealsTable tbody");
     tbody.innerHTML = "";
 
     data.forEach(row=>{
       let tr = document.createElement("tr");
 
-      const statusClass = getStatusClass(row.Status);
+      // تحديد القيمة الحالية
+      let currentStatus = row.Status || "Pending";
 
       tr.innerHTML = `
         <td>${row.StudentID || ""}</td>
@@ -139,22 +90,32 @@ async function loadAppeals(){
         <td>${row.Course || ""}</td>
         <td>${row.Reason || ""}</td>
         <td>${row.Date || ""}</td>
-        <td class="${statusClass}">${row.Status || ""}</td>
+        <td>${currentStatus}</td>
         <td>
-          <button class="accept" onclick="updateStatus('${row.StudentID}','${row.Course}','Revised with change')">
-            Revised with change
-          </button>
-          <button class="reject" onclick="updateStatus('${row.StudentID}','${row.Course}','Revised without change')">
-            Revised without change
-          </button>
+          <select class="statusDropdown">
+            <option value="Pending" ${currentStatus==="Pending"?"selected":""}>Pending</option>
+            <option value="Revised with change" ${currentStatus==="Revised with change"?"selected":""}>Revised with change</option>
+            <option value="Revised without change" ${currentStatus==="Revised without change"?"selected":""}>Revised without change</option>
+          </select>
         </td>
       `;
+
+      // 👇 ربط الحدث بشكل آمن (بدون onclick)
+      const select = tr.querySelector(".statusDropdown");
+
+      select.addEventListener("change", function(){
+        updateStatus(
+          row.StudentID,
+          row.Course,
+          this.value
+        );
+      });
 
       tbody.appendChild(tr);
     });
 
   }catch(err){
-    console.error("Error loading data:", err);
+    console.error("Load Error:", err);
   }
 }
 
@@ -172,11 +133,8 @@ async function updateStatus(studentId,course,status){
         status:status
       })
     });
-
-    loadAppeals();
-
   }catch(err){
-    console.error("Update error:", err);
+    console.error("Update Error:", err);
   }
 }
 
