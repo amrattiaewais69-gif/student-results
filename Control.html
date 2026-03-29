@@ -32,7 +32,7 @@ th{
   color:#fff;
 }
 
-/* ✅ Status Colors */
+/* Status Colors */
 .status-pending{
   background:#f1c40f;
   color:#000;
@@ -91,73 +91,93 @@ button{
 
 <script>
 
-const scriptURL = "PUT_YOUR_WEB_APP_URL_HERE";
+const scriptURL = "https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
 
 // ==============================
-// تحديد اللون حسب الحالة
+// Safe Status Class
 // ==============================
 function getStatusClass(status){
+  if(!status) return "";
+
+  status = status.toString().trim();
+
   if(status === "Pending") return "status-pending";
   if(status === "Revised with change") return "status-change";
   if(status === "Revised without change") return "status-nochange";
+
   return "";
 }
 
 // ==============================
-// Load Data
+// Load Data (SAFE)
 // ==============================
 async function loadAppeals(){
-  const res = await fetch(scriptURL,{
-    method:"POST",
-    body:JSON.stringify({action:"getAllAppealsControl"})
-  });
+  try{
+    const res = await fetch(scriptURL,{
+      method:"POST",
+      body:JSON.stringify({action:"getAllAppealsControl"})
+    });
 
-  const data = await res.json();
-  const tbody = document.querySelector("#appealsTable tbody");
-  tbody.innerHTML = "";
+    const data = await res.json();
 
-  data.forEach(row=>{
-    let tr = document.createElement("tr");
+    if(!Array.isArray(data)){
+      console.error("Invalid response", data);
+      return;
+    }
 
-    const statusClass = getStatusClass(row.Status);
+    const tbody = document.querySelector("#appealsTable tbody");
+    tbody.innerHTML = "";
 
-    tr.innerHTML = `
-      <td>${row.StudentID}</td>
-      <td>${row.StudentName}</td>
-      <td>${row.Course}</td>
-      <td>${row.Reason}</td>
-      <td>${row.Date}</td>
-      <td class="${statusClass}">${row.Status}</td>
-      <td>
-        <button class="accept" onclick="updateStatus('${row.StudentID}','${row.Course}','Revised with change')">
-          Revised with change
-        </button>
-        <button class="reject" onclick="updateStatus('${row.StudentID}','${row.Course}','Revised without change')">
-          Revised without change
-        </button>
-      </td>
-    `;
+    data.forEach(row=>{
+      let tr = document.createElement("tr");
 
-    tbody.appendChild(tr);
-  });
+      const statusClass = getStatusClass(row.Status);
+
+      tr.innerHTML = `
+        <td>${row.StudentID || ""}</td>
+        <td>${row.StudentName || ""}</td>
+        <td>${row.Course || ""}</td>
+        <td>${row.Reason || ""}</td>
+        <td>${row.Date || ""}</td>
+        <td class="${statusClass}">${row.Status || ""}</td>
+        <td>
+          <button class="accept" onclick="updateStatus('${row.StudentID}','${row.Course}','Revised with change')">
+            Revised with change
+          </button>
+          <button class="reject" onclick="updateStatus('${row.StudentID}','${row.Course}','Revised without change')">
+            Revised without change
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+  }catch(err){
+    console.error("Error loading data:", err);
+  }
 }
 
 // ==============================
 // Update Status
 // ==============================
 async function updateStatus(studentId,course,status){
+  try{
+    await fetch(scriptURL,{
+      method:"POST",
+      body:JSON.stringify({
+        action:"updateAppealStatus",
+        studentId:studentId,
+        course:course,
+        status:status
+      })
+    });
 
-  await fetch(scriptURL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"updateAppealStatus",
-      studentId:studentId,
-      course:course,
-      status:status
-    })
-  });
+    loadAppeals();
 
-  loadAppeals();
+  }catch(err){
+    console.error("Update error:", err);
+  }
 }
 
 // ==============================
