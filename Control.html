@@ -2,144 +2,239 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Control Panel</title>
+<title>UEC Control Panel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-body{
-  font-family: Arial;
-  background:#f4f6f9;
-  padding:20px;
-}
+*{box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{margin:0;background:#2f528f;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.card{background:#eee;width:97%;max-width:1100px;border-radius:12px;padding:25px;text-align:center;}
+.card2{background:#eee;width:31%;border-radius:12px;padding:25px;text-align:center;}
+.logo{width:70px;margin-bottom:5px;opacity:0.9;}
+input{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ccc;}
+button{padding:10px 15px;background:#345a9d;border:none;color:white;border-radius:6px;cursor:pointer;font-size:14px;}
+button:hover{background:#274a86;}
+.logout{background:#777;margin-top:15px;}
+.table-container{overflow-x:auto;margin-top:20px;}
+table{width:100%;border-collapse:collapse;min-width:1000px;}
+th{background:#4e81bd;color:white;padding:10px;}
+td{padding:10px;border:1px solid #ddd;text-align:center;}
+select{padding:6px;border-radius:5px;}
+#searchBox{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;font-size:14px;margin-top:15px;}
 
-h2{
-  text-align:center;
-}
+.statBox{background:white;padding:15px;border-radius:10px;width:180px;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;transition:0.3s;}
+.statBox:hover{transform:scale(1.05);}
+.statBox.active{background:#2f528f;color:white;}
+.statBox.active h3{color:white;}
+.statBox h3{margin:0;font-size:28px;color:#2f528f;}
+.statBox p{margin:5px 0 0;font-size:14px;color:#555;}
+.statBox.active p{color:#eee;}
 
-table{
-  width:100%;
-  border-collapse: collapse;
-  background:#fff;
-}
-
-th,td{
-  padding:10px;
-  border:1px solid #ddd;
-  text-align:center;
-}
-
-th{
-  background:#2c3e50;
-  color:#fff;
-}
-
-/* نفس ستايل الدروب داون القديم */
-select{
-  padding:5px;
-  border-radius:5px;
-}
+.footer{margin-top:20px;color:white;font-size:14px;text-align:center;}
 </style>
 </head>
 
 <body>
 
-<h2>Appeals Control Panel</h2>
+<div class="card2" id="loginBox">
+<img src="logo.png" class="logo">
+<h2>🎓 University of East Capital</h2>
+<p>Control Login</p>
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
 
-<table id="appealsTable">
-<thead>
+<div class="card" id="controlPanel" style="display:none">
+<img src="https://amrattiaewais69-gif.github.io/student-results/logo.png" class="logo">
+<h2>Appeals Dashboard</h2>
+
+<div id="stats" style="display:flex;gap:15px;flex-wrap:wrap;margin-top:20px;justify-content:center;">
+
+<div class="statBox active" id="box_ALL" onclick="filterByStatus('ALL')">
+<h3 id="totalCount">0</h3>
+<p>Total Appeals</p>
+</div>
+
+<div class="statBox" id="box_Pending" onclick="filterByStatus('Pending')">
+<h3 id="pendingCount">0</h3>
+<p>Pending</p>
+</div>
+
+<div class="statBox" id="box_Under Review" onclick="filterByStatus('Under Review')">
+<h3 id="underReviewCount">0</h3>
+<p>Under Review</p>
+</div>
+
+<div class="statBox" id="box_RevisedWith" onclick="filterByStatus('Revised with change')">
+<h3 id="acceptedCount">0</h3>
+<p>Revised with change</p>
+</div>
+
+<div class="statBox" id="box_RevisedWithout" onclick="filterByStatus('Revised without change')">
+<h3 id="rejectedCount">0</h3>
+<p>Revised without change</p>
+</div>
+
+</div>
+
+<input id="searchBox" placeholder="Search by Student Name or ID..." onkeyup="filterTable()">
+
+<button onclick="downloadExcel()">Download Appeals Excel</button>
+
+<div class="table-container">
+<table id="appealsTable"></table>
+</div>
+
+<button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="footer">
+UEC ICT Department<br>
+© 2026 University of East Capital
+</div>
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
+
+let allAppealsData = [];
+let currentFilter = "ALL";
+
+async function login(){
+const username=document.getElementById("username").value;
+const password=document.getElementById("password").value;
+
+const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"verifyControlAccount",username,password})});
+const data=await res.json();
+
+if(data.status==="success"){
+localStorage.setItem("controlUser", username);
+document.getElementById("loginBox").style.display="none";
+document.getElementById("controlPanel").style.display="block";
+loadAppeals();
+}else alert("Invalid username or password");
+}
+
+async function loadAppeals(){
+const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getAllAppealsControl"})});
+const data=await res.json();
+
+allAppealsData = data;
+applyCurrentFilter();
+updateStats(data);
+}
+
+function renderTable(data){
+const table=document.getElementById("appealsTable");
+
+table.innerHTML=`
 <tr>
 <th>Student ID</th>
-<th>Name</th>
+<th>Student Name</th>
 <th>Course</th>
 <th>Reason</th>
 <th>Date</th>
 <th>Status</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+<th>Update</th>
+</tr>`;
 
-<script>
+data.forEach(a=>{
+const row=document.createElement("tr");
+row.innerHTML=`
+<td>${a.StudentID}</td>
+<td>${a.StudentName}</td>
+<td>${a.Course}</td>
+<td style="max-width:250px;word-wrap:break-word">${a.Reason}</td>
+<td>${a.Date}</td>
+<td>
+<select id="status_${a.StudentID}_${a.Course}">
+<option value="Pending" ${a.Status==="Pending"?"selected":""}>Pending</option>
+<option value="Under Review" ${a.Status==="Under Review"?"selected":""}>Under Review</option>
+<option value="Revised with change" ${a.Status==="Revised with change"?"selected":""}>Revised with change</option>
+<option value="Revised without change" ${a.Status==="Revised without change"?"selected":""}>Revised without change</option>
+</select>
+</td>
+<td><button onclick="updateStatus('${a.StudentID}','${a.Course}')">Save</button></td>`;
 
-const scriptURL = "https://script.google.com/macros/s/AKfycbzs5LlAM9m4zLbX1IOpMYi5-ySKvW3IEA_lIQWhH6Hsb-XJgm3Amnnlu7RAlYLTCD2W/exec";
-
-// ==============================
-// Load Data (Safe)
-// ==============================
-async function loadAppeals(){
-  try{
-    const res = await fetch(scriptURL,{
-      method:"POST",
-      body:JSON.stringify({action:"getAllAppealsControl"})
-    });
-
-    const data = await res.json();
-
-    const tbody = document.querySelector("#appealsTable tbody");
-    tbody.innerHTML = "";
-
-    data.forEach(row=>{
-      let tr = document.createElement("tr");
-
-      // تحديد القيمة الحالية
-      let currentStatus = row.Status || "Pending";
-
-      tr.innerHTML = `
-        <td>${row.StudentID || ""}</td>
-        <td>${row.StudentName || ""}</td>
-        <td>${row.Course || ""}</td>
-        <td>${row.Reason || ""}</td>
-        <td>${row.Date || ""}</td>
-        <td>${currentStatus}</td>
-        <td>
-          <select class="statusDropdown">
-            <option value="Pending" ${currentStatus==="Pending"?"selected":""}>Pending</option>
-            <option value="Revised with change" ${currentStatus==="Revised with change"?"selected":""}>Revised with change</option>
-            <option value="Revised without change" ${currentStatus==="Revised without change"?"selected":""}>Revised without change</option>
-          </select>
-        </td>
-      `;
-
-      // 👇 ربط الحدث بشكل آمن (بدون onclick)
-      const select = tr.querySelector(".statusDropdown");
-
-      select.addEventListener("change", function(){
-        updateStatus(
-          row.StudentID,
-          row.Course,
-          this.value
-        );
-      });
-
-      tbody.appendChild(tr);
-    });
-
-  }catch(err){
-    console.error("Load Error:", err);
-  }
+table.appendChild(row);
+});
 }
 
-// ==============================
-// Update Status
-// ==============================
-async function updateStatus(studentId,course,status){
-  try{
-    await fetch(scriptURL,{
-      method:"POST",
-      body:JSON.stringify({
-        action:"updateAppealStatus",
-        studentId:studentId,
-        course:course,
-        status:status
-      })
-    });
-  }catch(err){
-    console.error("Update Error:", err);
-  }
+function updateStats(data){
+let total=data.length,pending=0,underReview=0,accepted=0,rejected=0;
+
+data.forEach(a=>{
+if(a.Status==="Pending") pending++;
+else if(a.Status==="Under Review") underReview++;
+else if(a.Status==="Revised with change") accepted++;
+else if(a.Status==="Revised without change") rejected++;
+});
+
+document.getElementById("totalCount").innerText=total;
+document.getElementById("pendingCount").innerText=pending;
+document.getElementById("underReviewCount").innerText=underReview;
+document.getElementById("acceptedCount").innerText=accepted;
+document.getElementById("rejectedCount").innerText=rejected;
 }
 
-// ==============================
+function filterByStatus(status){
+currentFilter=status;
+
+["ALL","Pending","Under Review","Revised with change","Revised without change"].forEach(s=>{
+const el=document.getElementById("box_"+s.replaceAll(" ",""));
+if(el) el.classList.remove("active");
+});
+
+document.getElementById("box_"+status.replaceAll(" ","")).classList.add("active");
+
+applyCurrentFilter();
+}
+
+function applyCurrentFilter(){
+let data;
+if(currentFilter==="ALL") data=allAppealsData;
+else data=allAppealsData.filter(a=>a.Status===currentFilter);
+
+renderTable(data);
+}
+
+function filterTable(){
+const input=document.getElementById("searchBox").value.toLowerCase();
+const rows=document.querySelectorAll("#appealsTable tr");
+
+rows.forEach((row,index)=>{
+if(index===0) return;
+const id=row.cells[0].innerText.toLowerCase();
+const name=row.cells[1].innerText.toLowerCase();
+row.style.display=(id.includes(input)||name.includes(input))?"":"none";
+});
+}
+
+async function updateStatus(studentId,course){
+const sel=document.getElementById(`status_${studentId}_${course}`);
+const status=sel.value;
+
+const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"updateAppealStatus",studentId,course,status,username: localStorage.getItem("controlUser")})});
+const data=await res.json();
+
+if(data.status==="success"){
+alert("Updated successfully");
 loadAppeals();
+}else alert("Error updating");
+}
+
+function downloadExcel(){
+const sheetID="14IW4oA1wo_-PyUXQMQdIEwoLcTu1nB4Yfz2PnGZeATM";
+const url=`https://docs.google.com/spreadsheets/d/${sheetID}/export?format=xlsx&gid=1967284628`;
+const a=document.createElement("a");
+a.href=url;a.download="UEC_Appeals.xlsx";a.click();
+}
+
+setInterval(loadAppeals,30000);
+
+function logout(){location.reload();}
 
 </script>
 
